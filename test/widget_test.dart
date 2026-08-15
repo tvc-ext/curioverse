@@ -25,8 +25,10 @@ void main() {
     );
 
     await tester.tap(find.text('9–11'));
+    await tester.pump();
     await tester.ensureVisible(find.text('Nova Fox'));
     await tester.tap(find.text('Nova Fox'));
+    await tester.pump();
     await tester.ensureVisible(find.text('Enter CurioVerse'));
     final continueButton = tester.widget<FilledButton>(
       find.widgetWithText(FilledButton, 'Enter CurioVerse'),
