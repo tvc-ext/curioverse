@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'data/open_knowledge_service.dart';
 import 'data/profile_store.dart';
+import 'data/progress_store.dart';
 import 'models/child_profile.dart';
+import 'screens/learning_adventure_screen.dart';
 import 'screens/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final preferences = await SharedPreferences.getInstance();
-  final store = SharedPreferencesProfileStore(preferences);
+  final profileStore = SharedPreferencesProfileStore(preferences);
+  final progressStore = SharedPreferencesProgressStore(preferences);
   runApp(
     CurioVerseApp(
-      profileStore: store,
-      initialProfile: await store.load(),
+      profileStore: profileStore,
+      progressStore: progressStore,
+      knowledgeSource: OpenKnowledgeService(preferences: preferences),
+      initialProfile: await profileStore.load(),
+      initialProgress: await progressStore.load(),
     ),
   );
 }
@@ -20,12 +27,18 @@ Future<void> main() async {
 class CurioVerseApp extends StatefulWidget {
   const CurioVerseApp({
     required this.profileStore,
+    this.progressStore,
+    this.knowledgeSource,
     this.initialProfile,
+    this.initialProgress,
     super.key,
   });
 
   final ProfileStore profileStore;
+  final ProgressStore? progressStore;
+  final OpenKnowledgeSource? knowledgeSource;
   final ChildProfile? initialProfile;
+  final LearningProgress? initialProgress;
 
   @override
   State<CurioVerseApp> createState() => _CurioVerseAppState();
@@ -33,15 +46,31 @@ class CurioVerseApp extends StatefulWidget {
 
 class _CurioVerseAppState extends State<CurioVerseApp> {
   late ChildProfile? profile = widget.initialProfile;
+  late LearningProgress progress =
+      widget.initialProgress ?? const LearningProgress();
+  late final ProgressStore progressStore =
+      widget.progressStore ?? MemoryProgressStore(progress);
+  late final OpenKnowledgeSource knowledgeSource =
+      widget.knowledgeSource ?? const MemoryOpenKnowledgeSource();
 
   Future<void> completeOnboarding(ChildProfile newProfile) async {
     await widget.profileStore.save(newProfile);
     setState(() => profile = newProfile);
   }
 
+  Future<void> completeTopic(String topicId, int reward) async {
+    final updated = progress.complete(topicId, reward);
+    await progressStore.save(updated);
+    setState(() => progress = updated);
+  }
+
   Future<void> resetProfile() async {
     await widget.profileStore.clear();
-    setState(() => profile = null);
+    await progressStore.clear();
+    setState(() {
+      profile = null;
+      progress = const LearningProgress();
+    });
   }
 
   @override
@@ -67,7 +96,13 @@ class _CurioVerseAppState extends State<CurioVerseApp> {
       ),
       home: profile == null
           ? OnboardingScreen(onComplete: completeOnboarding)
-          : UniverseShell(profile: profile!, onResetProfile: resetProfile),
+          : UniverseShell(
+              profile: profile!,
+              progress: progress,
+              knowledgeSource: knowledgeSource,
+              onTopicCompleted: completeTopic,
+              onResetProfile: resetProfile,
+            ),
     );
   }
 }
@@ -75,11 +110,17 @@ class _CurioVerseAppState extends State<CurioVerseApp> {
 class UniverseShell extends StatefulWidget {
   const UniverseShell({
     required this.profile,
+    required this.progress,
+    required this.knowledgeSource,
+    required this.onTopicCompleted,
     required this.onResetProfile,
     super.key,
   });
 
   final ChildProfile profile;
+  final LearningProgress progress;
+  final OpenKnowledgeSource knowledgeSource;
+  final Future<void> Function(String topicId, int reward) onTopicCompleted;
   final Future<void> Function() onResetProfile;
 
   @override
@@ -115,11 +156,15 @@ class _UniverseShellState extends State<UniverseShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomeUniverse(profile: widget.profile),
-      const PlaceholderPage(
-        icon: Icons.rocket_launch,
-        title: 'Explore worlds',
-        message: 'Science, nature, space, inventions and more are coming.',
+      HomeUniverse(
+        profile: widget.profile,
+        onStartMission: () => setState(() => currentIndex = 1),
+      ),
+      LearningAdventureScreen(
+        ageBand: widget.profile.ageBand,
+        knowledgeSource: widget.knowledgeSource,
+        completedTopicIds: widget.progress.completedTopicIds,
+        onTopicCompleted: widget.onTopicCompleted,
       ),
       const PlaceholderPage(
         icon: Icons.extension,
@@ -173,11 +218,11 @@ class _UniverseShellState extends State<UniverseShell> {
           const SizedBox(width: 8),
           Semantics(
             label: 'Curiosity energy: 120',
-            child: const Padding(
-              padding: EdgeInsets.only(right: 16),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16),
               child: Chip(
-                avatar: Icon(Icons.bolt, color: Color(0xFFFF8A00)),
-                label: Text('120'),
+                avatar: const Icon(Icons.bolt, color: Color(0xFFFF8A00)),
+                label: Text('${widget.progress.energy}'),
               ),
             ),
           ),
@@ -194,9 +239,14 @@ class _UniverseShellState extends State<UniverseShell> {
 }
 
 class HomeUniverse extends StatelessWidget {
-  const HomeUniverse({required this.profile, super.key});
+  const HomeUniverse({
+    required this.profile,
+    required this.onStartMission,
+    super.key,
+  });
 
   final ChildProfile profile;
+  final VoidCallback onStartMission;
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +265,7 @@ class HomeUniverse extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         const SizedBox(height: 20),
-        const MissionCard(),
+        MissionCard(onStart: onStartMission),
         const SizedBox(height: 24),
         const SectionTitle(title: 'Pick a world', action: 'See all'),
         const SizedBox(height: 12),
@@ -266,7 +316,7 @@ class HomeUniverse extends StatelessWidget {
               child: Text('A tiny logic mission worth 20 energy'),
             ),
             trailing: const Icon(Icons.arrow_forward_rounded),
-            onTap: () {},
+            onTap: onStartMission,
           ),
         ),
       ],
@@ -275,7 +325,9 @@ class HomeUniverse extends StatelessWidget {
 }
 
 class MissionCard extends StatelessWidget {
-  const MissionCard({super.key});
+  const MissionCard({required this.onStart, super.key});
+
+  final VoidCallback onStart;
 
   @override
   Widget build(BuildContext context) {
@@ -312,7 +364,7 @@ class MissionCard extends StatelessWidget {
                 backgroundColor: const Color(0xFFFFCB67),
                 foregroundColor: const Color(0xFF2D2475),
               ),
-              onPressed: () {},
+              onPressed: onStart,
               icon: const Icon(Icons.play_arrow_rounded),
               label: const Text('Start mission'),
             ),
