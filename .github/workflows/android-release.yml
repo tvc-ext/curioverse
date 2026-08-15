@@ -39,6 +39,24 @@ jobs:
       - name: Generate Android project
         run: flutter create --org com.tvcext --project-name curioverse --platforms=android .
 
+      - name: Configure Android capabilities
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("android/app/src/main/AndroidManifest.xml")
+          source = path.read_text()
+          permissions = """    <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.CAMERA" />
+              <uses-feature android:name="android.hardware.camera" android:required="false" />
+          """
+          source = source.replace("<manifest xmlns:android=", "<manifest xmlns:android=")
+          marker = ">\n    <application"
+          source = source.replace(marker, ">\n" + permissions + "    <application", 1)
+          path.write_text(source)
+          PY
+          grep -q "android.permission.INTERNET" android/app/src/main/AndroidManifest.xml
+          grep -q "android.permission.CAMERA" android/app/src/main/AndroidManifest.xml
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -92,7 +110,7 @@ jobs:
 
       - name: Build release APK
         if: github.event_name != 'pull_request'
-        run: flutter build apk --release --build-name 1.0.0 --build-number ${{ github.run_number }}
+        run: flutter build apk --release --target-platform android-arm64 --split-debug-info=build/debug-info --build-name 1.0.0 --build-number ${{ github.run_number }}
 
       - name: Enable KVM for Android emulator
         if: github.event_name != 'pull_request'
@@ -211,6 +229,7 @@ jobs:
         run: |
           echo "## CurioVerse Android" >> "$GITHUB_STEP_SUMMARY"
           echo "- Validation: flutter analyze + flutter test + Android emulator launch" >> "$GITHUB_STEP_SUMMARY"
-          echo "- APK: curioverse-latest.apk" >> "$GITHUB_STEP_SUMMARY"
+          echo "- APK: optimized for modern 64-bit Android (ARM64)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Capabilities: camera + internet enabled in release manifest" >> "$GITHUB_STEP_SUMMARY"
           echo "- Updates: stable com.tvcext.curioverse ID, permanent signing, increasing build number" >> "$GITHUB_STEP_SUMMARY"
           echo "- Retention: one replaceable GitHub Release tagged latest" >> "$GITHUB_STEP_SUMMARY"
