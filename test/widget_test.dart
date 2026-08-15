@@ -1,13 +1,67 @@
+import 'package:curioverse/data/profile_store.dart';
 import 'package:curioverse/main.dart';
+import 'package:curioverse/models/child_profile.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('shows the CurioVerse home experience', (tester) async {
-    await tester.pumpWidget(const CurioVerseApp());
+  testWidgets('new explorer completes safe onboarding', (tester) async {
+    final store = MemoryProfileStore();
 
-    expect(find.text('CurioVerse'), findsOneWidget);
-    expect(find.text('Hello, Nova Fox!'), findsOneWidget);
-    expect(find.text('TODAY’S MISSION'), findsOneWidget);
+    await tester.pumpWidget(CurioVerseApp(profileStore: store));
+
+    expect(find.text('Welcome to CurioVerse!'), findsOneWidget);
+    expect(find.text('We never need your real name or exact age.',
+        findRichText: true), findsOneWidget);
+
+    await tester.tap(find.text('6–8'));
+    await tester.tap(find.text('Pixel Panda'));
+    await tester.tap(find.text('Enter CurioVerse'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hello, Pixel Panda!'), findsOneWidget);
+    expect(store.profile?.ageBand, AgeBand.explorer6to8);
+    expect(store.profile?.avatarId, 'pixel_panda');
+  });
+
+  testWidgets('returning explorer skips onboarding', (tester) async {
+    final profile = ChildProfile(
+      ageBand: AgeBand.creator12to14,
+      avatarId: 'astro_owl',
+    );
+
+    await tester.pumpWidget(
+      CurioVerseApp(
+        profileStore: MemoryProfileStore(profile),
+        initialProfile: profile,
+      ),
+    );
+
+    expect(find.text('Hello, Astro Owl!'), findsOneWidget);
+    expect(find.text('Welcome to CurioVerse!'), findsNothing);
     expect(find.text('Friends'), findsOneWidget);
+  });
+
+  testWidgets('continue is disabled until both choices are selected',
+      (tester) async {
+    await tester.pumpWidget(
+      CurioVerseApp(profileStore: MemoryProfileStore()),
+    );
+
+    FilledButton button =
+        tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Enter CurioVerse'));
+    expect(button.onPressed, isNull);
+
+    await tester.tap(find.text('9–11'));
+    await tester.pump();
+    button =
+        tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Enter CurioVerse'));
+    expect(button.onPressed, isNull);
+
+    await tester.tap(find.text('Nova Fox'));
+    await tester.pump();
+    button =
+        tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Enter CurioVerse'));
+    expect(button.onPressed, isNotNull);
   });
 }
