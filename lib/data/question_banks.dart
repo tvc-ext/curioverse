@@ -2,8 +2,6 @@ import 'dart:math';
 
 import '../models/learning_topic.dart';
 
-enum QuizDifficulty { easy, medium, hard }
-
 class _Seed {
   const _Seed(
     this.id,
