@@ -25,8 +25,8 @@ void main() {
     );
 
     await tester.tap(find.text('6–8'));
-    await tester.ensureVisible(find.text('Pixel Panda'));
-    await tester.tap(find.text('Pixel Panda'));
+    await tester.ensureVisible(find.text('Nova Fox'));
+    await tester.tap(find.text('Nova Fox'));
     await tester.ensureVisible(find.text('Enter CurioVerse'));
     final continueButton = tester.widget<FilledButton>(
       find.widgetWithText(FilledButton, 'Enter CurioVerse'),
@@ -35,9 +35,9 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Enter CurioVerse'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Hello, Pixel Panda!'), findsOneWidget);
+    expect(find.text('Hello, Nova Fox!'), findsOneWidget);
     expect(store.profile?.ageBand, AgeBand.explorer6to8);
-    expect(store.profile?.avatarId, 'pixel_panda');
+    expect(store.profile?.avatarId, 'nova_fox');
   });
 
   testWidgets('returning explorer skips onboarding', (tester) async {
