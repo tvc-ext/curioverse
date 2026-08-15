@@ -5,6 +5,7 @@ import 'data/open_knowledge_service.dart';
 import 'data/profile_store.dart';
 import 'data/progress_store.dart';
 import 'models/child_profile.dart';
+import 'screens/friends_clubhouse_screen.dart';
 import 'screens/learning_adventure_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/pattern_game_screen.dart';
@@ -188,10 +189,11 @@ class _UniverseShellState extends State<UniverseShell> {
             widget.progress.completed('game_pattern_sprint'),
         onCompleted: widget.onTopicCompleted,
       ),
-      const PlaceholderPage(
-        icon: Icons.shield_outlined,
-        title: 'Friends clubhouse',
-        message: 'Only parent-approved aliases and invite codes—never real names.',
+      FriendsClubhouseScreen(
+        profile: widget.profile,
+        alreadyCompleted:
+            widget.progress.completed('clubhouse_team_mission'),
+        onCompleted: widget.onTopicCompleted,
       ),
     ];
 
