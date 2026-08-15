@@ -32,6 +32,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: BrainArcadeScreen(
+              key: ValueKey(title),
               ageBand: AgeBand.adventurer9to11,
               completedGameIds: const {},
               onCompleted: (_, __) async {},
