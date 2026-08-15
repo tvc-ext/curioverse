@@ -37,11 +37,15 @@ void main() {
     expect(find.text('Explorer Clubhouse'), findsOneWidget);
     expect(find.textContaining('no public chat'), findsOneWidget);
 
-    await tester.tap(
-      find.text('Compare trustworthy sources and evidence'),
-    );
+    final correctAnswer =
+        find.text('Compare trustworthy sources and evidence');
+    await tester.ensureVisible(correctAnswer);
+    await tester.tap(correctAnswer);
     await tester.pump();
-    await tester.tap(find.text('Complete as a team'));
+
+    final completeButton = find.text('Complete as a team');
+    await tester.ensureVisible(completeButton);
+    await tester.tap(completeButton);
     await tester.pumpAndSettle();
 
     expect(find.text('Team mission complete!'), findsOneWidget);
