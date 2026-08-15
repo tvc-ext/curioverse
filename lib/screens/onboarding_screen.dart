@@ -53,7 +53,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               style: TextStyle(fontSize: 16, height: 1.4),
             ),
             const SizedBox(height: 28),
-            _StepTitle(number: 1, title: 'Choose your age group'),
+            const _StepTitle(number: 1, title: 'Choose your age group'),
             const SizedBox(height: 12),
             ...AgeBand.values.map(
               (band) => Padding(
@@ -66,7 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
             const SizedBox(height: 22),
-            _StepTitle(number: 2, title: 'Choose your explorer'),
+            const _StepTitle(number: 2, title: 'Choose your explorer'),
             const SizedBox(height: 12),
             GridView.count(
               crossAxisCount: 2,
