@@ -32,7 +32,7 @@ void main() {
 
     await tester.tap(find.text('Games'));
     await tester.pumpAndSettle();
-    expect(find.text('Brain games'), findsOneWidget);
+    expect(find.text('Pattern Sprint'), findsOneWidget);
 
     await tester.tap(find.text('🦊'));
     await tester.pumpAndSettle();
