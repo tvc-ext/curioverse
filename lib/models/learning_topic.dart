@@ -271,4 +271,118 @@ const learningTopics = [
       ),
     ],
   )
+  LearningTopic(
+    id: 'seven_wonders',
+    emoji: '🌍',
+    title: 'Seven Wonders Quest',
+    subtitle: 'Visit remarkable places around the world',
+    colorValue: 0xFFFFE2D1,
+    ageBands: {
+      AgeBand.explorer6to8,
+      AgeBand.adventurer9to11,
+      AgeBand.creator12to14,
+    },
+    storyTitle: 'Seven extraordinary human-made places',
+    storyPages: [
+      'The New Seven Wonders are the Great Wall of China, Petra, the Colosseum, Chichén Itzá, Machu Picchu, the Taj Mahal and Christ the Redeemer.',
+      'They were created in different places and centuries. Their builders solved challenges involving stone, transport, water, height, decoration and large communities.',
+      'The Taj Mahal in Agra was commissioned by the Mughal emperor Shah Jahan. Today, caring for all seven sites helps protect history for future explorers.',
+    ],
+    questions: [
+      QuizQuestion(
+        prompt: 'Which New Wonder is in India?',
+        options: ['Taj Mahal', 'Machu Picchu', 'Colosseum'],
+        correctIndex: 0,
+        explanation: 'The Taj Mahal is in Agra, India.',
+      ),
+      QuizQuestion(
+        prompt: 'Why should historic sites be protected?',
+        options: ['They preserve evidence and stories', 'To hide them', 'To stop learning'],
+        correctIndex: 0,
+        explanation: 'Conservation protects physical evidence and cultural stories for future generations.',
+      ),
+      QuizQuestion(
+        prompt: 'Are all seven wonders from the same century?',
+        options: ['No', 'Yes', 'They were built yesterday'],
+        correctIndex: 0,
+        explanation: 'They come from different societies and periods of history.',
+      ),
+    ],
+  ),
+  LearningTopic(
+    id: 'human_evolution',
+    emoji: '🧬',
+    title: 'Human Evolution',
+    subtitle: 'Follow our changing family tree',
+    colorValue: 0xFFE5F0FF,
+    ageBands: {
+      AgeBand.adventurer9to11,
+      AgeBand.creator12to14,
+    },
+    storyTitle: 'A branching human family tree',
+    storyPages: [
+      'Humans are primates. We share ancient common ancestors with other apes, but modern humans did not evolve from the apes living today.',
+      'Fossils, tools and DNA reveal a branching family tree with several human species. Homo sapiens emerged in Africa roughly 300,000 years ago.',
+      'Evolution happens across many generations as inherited traits vary. Culture, cooperation, language and technology also shaped the human journey.',
+    ],
+    questions: [
+      QuizQuestion(
+        prompt: 'What shape best describes human evolution?',
+        options: ['A branching family tree', 'A straight ladder', 'A single-day change'],
+        correctIndex: 0,
+        explanation: 'Many related populations and species form branches, not a simple straight line.',
+      ),
+      QuizQuestion(
+        prompt: 'Which evidence helps scientists study human evolution?',
+        options: ['Fossils and DNA', 'Only guesses', 'Weather forecasts alone'],
+        correctIndex: 0,
+        explanation: 'Fossils, archaeology and genetics provide independent evidence.',
+      ),
+      QuizQuestion(
+        prompt: 'Where did Homo sapiens emerge?',
+        options: ['Africa', 'The Moon', 'Antarctica'],
+        correctIndex: 0,
+        explanation: 'Current fossil and genetic evidence places the emergence of Homo sapiens in Africa.',
+      ),
+    ],
+  ),
+  LearningTopic(
+    id: 'animal_detective',
+    emoji: '🐾',
+    title: 'Animal Detective',
+    subtitle: 'Identify animals using visual clues',
+    colorValue: 0xFFDDF6D8,
+    ageBands: {
+      AgeBand.explorer6to8,
+      AgeBand.adventurer9to11,
+      AgeBand.creator12to14,
+    },
+    storyTitle: 'Look closely: every animal carries clues',
+    storyPages: [
+      'Animal detectives notice body covering, feet, beaks, teeth, ears and tails. A tiger has stripes; an Indian peafowl has a crest and colourful train feathers.',
+      'Habitats add clues. Fins and gills suit life in water, while broad wings and feathers help birds move through air.',
+      'One picture may not reveal everything. A careful scientist records visible clues, compares reliable references and stays uncertain when evidence is weak.',
+    ],
+    questions: [
+      QuizQuestion(
+        prompt: 'Which clue strongly suggests an animal is a bird?',
+        options: ['Feathers', 'Fur', 'Scales alone'],
+        correctIndex: 0,
+        explanation: 'All living birds have feathers.',
+      ),
+      QuizQuestion(
+        prompt: 'Which animal is famous for dark stripes on orange fur?',
+        options: ['Tiger', 'Dolphin', 'Peafowl'],
+        correctIndex: 0,
+        explanation: 'A tiger’s stripe pattern is also unique to the individual.',
+      ),
+      QuizQuestion(
+        prompt: 'What should you do when a photo lacks enough clues?',
+        options: ['Say you are uncertain', 'Invent an answer', 'Ignore evidence'],
+        correctIndex: 0,
+        explanation: 'Responsible identification includes uncertainty when evidence is incomplete.',
+      ),
+    ],
+  ),
+
 ];
