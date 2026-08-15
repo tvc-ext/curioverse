@@ -40,6 +40,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text(title).first, 300);
       await tester.tap(find.text(title).first);
       await tester.pumpAndSettle();
       expect(find.text('Brain Arcade'), findsOneWidget);
