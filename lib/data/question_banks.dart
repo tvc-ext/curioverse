@@ -1,4 +1,8 @@
+import 'dart:convert';
 import 'dart:math';
+
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/child_profile.dart';
 import '../models/learning_topic.dart';
@@ -208,4 +212,78 @@ QuizDifficulty _difficultyFor(QuizDifficulty seedDifficulty, int variant) {
   return seedDifficulty.index > variantDifficulty.index
       ? seedDifficulty
       : variantDifficulty;
+}
+
+
+const _remoteContentRoot =
+    'https://raw.githubusercontent.com/tvc-ext/-curioverse-content/main';
+
+Future<List<QuizQuestion>> createRemoteQuizSession(
+  String topicId, {
+  required AgeBand ageBand,
+  int size = 10,
+  http.Client? client,
+}) async {
+  final preferences = await SharedPreferences.getInstance();
+  final cacheKey = 'curioverse.content.questions.$topicId.v1';
+  String? payload;
+  try {
+    final response = await (client ?? http.Client()).get(
+      Uri.parse('$_remoteContentRoot/questions/$topicId.v1.json'),
+    ).timeout(const Duration(seconds: 8));
+    if (response.statusCode == 200) {
+      payload = response.body;
+      await preferences.setString(cacheKey, payload);
+    }
+  } catch (_) {
+    payload = null;
+  }
+  payload ??= preferences.getString(cacheKey);
+  if (payload == null) {
+    return createQuizSession(topicId, ageBand: ageBand, size: size);
+  }
+  try {
+    final json = jsonDecode(payload) as Map<String, Object?>;
+    final values = json['questions']! as List<Object?>;
+    final bank = values.map((value) {
+      final question = value! as Map<String, Object?>;
+      return QuizQuestion(
+        id: question['id']! as String,
+        prompt: question['prompt']! as String,
+        options: (question['options']! as List<Object?>).cast<String>(),
+        correctIndex: question['correctIndex']! as int,
+        explanation: question['explanation']! as String,
+        difficulty: QuizDifficulty.values.byName(
+          question['difficulty']! as String,
+        ),
+      );
+    }).toList();
+    return _selectRemoteSession(bank, ageBand, size);
+  } catch (_) {
+    return createQuizSession(topicId, ageBand: ageBand, size: size);
+  }
+}
+
+List<QuizQuestion> _selectRemoteSession(
+  List<QuizQuestion> bank,
+  AgeBand ageBand,
+  int size,
+) {
+  final random = Random();
+  final candidates = [...bank]..shuffle(random);
+  candidates.sort((a, b) {
+    final direction =
+        ageBand == AgeBand.creator12to14 ? -1 : 1;
+    return direction * a.difficulty.index.compareTo(b.difficulty.index);
+  });
+  final selected = <QuizQuestion>[];
+  final concepts = <String>{};
+  for (final question in candidates) {
+    final concept = question.id.split('.v').first;
+    if (concepts.add(concept)) selected.add(question);
+    if (selected.length == size) break;
+  }
+  return selected.length == size
+      ? selected
+      : createQuizSession(ageBand: ageBand, topicId, size: size);
 }
