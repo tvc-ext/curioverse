@@ -80,9 +80,18 @@ class OpenKnowledgeService implements OpenKnowledgeSource {
   @override
   Future<List<OpenKnowledgeItem>> load(AgeBand ageBand) async {
     try {
-      final items = await Future.wait(
+      final wikipediaItems = await Future.wait(
         _titlesByAge[ageBand]!.map(_fetchWikipediaSummary),
       );
+      List<OpenKnowledgeItem> nasaItems;
+      try {
+        nasaItems = await _fetchNasaImages(
+          ageBand == AgeBand.explorer6to8 ? 'Moon' : 'space exploration',
+        );
+      } catch (_) {
+        nasaItems = const [];
+      }
+      final items = [...nasaItems, ...wikipediaItems];
       await preferences.setString(
         '$_cacheKey.${ageBand.name}',
         jsonEncode(items.map((item) => item.toJson()).toList()),
@@ -97,6 +106,43 @@ class OpenKnowledgeService implements OpenKnowledgeSource {
           .map(OpenKnowledgeItem.fromJson)
           .toList();
     }
+  }
+
+  Future<List<OpenKnowledgeItem>> _fetchNasaImages(String query) async {
+    final uri = Uri.https(
+      'images-api.nasa.gov',
+      '/search',
+      {'q': query, 'media_type': 'image', 'page_size': '6'},
+    );
+    final response = await client.get(uri);
+    if (response.statusCode != 200) {
+      throw StateError('NASA request failed: ${response.statusCode}');
+    }
+
+    final json = jsonDecode(response.body) as Map<String, Object?>;
+    final collection = json['collection']! as Map<String, Object?>;
+    final items = collection['items']! as List<Object?>;
+
+    return items.take(6).map((value) {
+      final item = value! as Map<String, Object?>;
+      final data = (item['data']! as List<Object?>).first!
+          as Map<String, Object?>;
+      final links = item['links'] as List<Object?>?;
+      final imageUrl = links == null || links.isEmpty
+          ? null
+          : (links.first! as Map<String, Object?>)['href'] as String?;
+      final nasaId = data['nasa_id']! as String;
+      final description = (data['description'] as String?) ??
+          'Explore this image from NASA’s public library.';
+
+      return OpenKnowledgeItem(
+        title: data['title']! as String,
+        summary: description,
+        sourceUrl: 'https://images.nasa.gov/details-$nasaId',
+        imageUrl: imageUrl,
+        credit: 'NASA Image and Video Library',
+      );
+    }).toList();
   }
 
   Future<OpenKnowledgeItem> _fetchWikipediaSummary(String title) async {
