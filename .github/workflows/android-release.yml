@@ -57,22 +57,25 @@ jobs:
         run: |
           sdkmanager_path="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           avdmanager_path="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
+          adb_path="$ANDROID_HOME/platform-tools/adb"
           test -x "$sdkmanager_path"
           test -x "$avdmanager_path"
+          test -x "$adb_path"
+          export adb_path
           yes | "$sdkmanager_path" "platform-tools" "emulator" "platforms;android-35" "system-images;android-35;google_apis;x86_64" >/dev/null
           echo no | "$avdmanager_path" create avd --force --name curioverse-smoke --package "system-images;android-35;google_apis;x86_64"
           "$ANDROID_HOME/emulator/emulator"             -avd curioverse-smoke             -no-window             -no-audio             -no-boot-anim             -gpu swiftshader_indirect             >/tmp/curioverse-emulator.log 2>&1 &
-          adb wait-for-device
-          timeout 300 bash -c 'until [ "$(adb shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 5; done'
-          adb install -r build/app/outputs/flutter-apk/app-release.apk
-          package_name="$(adb shell pm list packages | sed -n 's/package:\(.*curioverse.*\)/\1/p' | tr -d "\r" | head -n 1)"
+          "$adb_path" wait-for-device
+          timeout 300 bash -c 'until [ "$("$adb_path" shell getprop sys.boot_completed | tr -d "\r")" = "1" ]; do sleep 5; done'
+          "$adb_path" install -r build/app/outputs/flutter-apk/app-release.apk
+          package_name="$("$adb_path" shell pm list packages | sed -n 's/package:\(.*curioverse.*\)/\1/p' | tr -d "\r" | head -n 1)"
           test -n "$package_name"
-          adb logcat -c
-          adb shell monkey -p "$package_name" -c android.intent.category.LAUNCHER 1
+          "$adb_path" logcat -c
+          "$adb_path" shell monkey -p "$package_name" -c android.intent.category.LAUNCHER 1
           sleep 8
-          adb shell pidof "$package_name"
-          if adb logcat -d | grep -q "FATAL EXCEPTION"; then
-            adb logcat -d
+          "$adb_path" shell pidof "$package_name"
+          if "$adb_path" logcat -d | grep -q "FATAL EXCEPTION"; then
+            "$adb_path" logcat -d
             exit 1
           fi
 
