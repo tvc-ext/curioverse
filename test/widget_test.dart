@@ -28,7 +28,11 @@ void main() {
     await tester.ensureVisible(find.text('Pixel Panda'));
     await tester.tap(find.text('Pixel Panda'));
     await tester.ensureVisible(find.text('Enter CurioVerse'));
-    await tester.tap(find.text('Enter CurioVerse'));
+    final continueButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Enter CurioVerse'),
+    );
+    expect(continueButton.onPressed, isNotNull);
+    await tester.tap(find.widgetWithText(FilledButton, 'Enter CurioVerse'));
     await tester.pumpAndSettle();
 
     expect(find.text('Hello, Pixel Panda!'), findsOneWidget);
