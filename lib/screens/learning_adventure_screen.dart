@@ -159,7 +159,7 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: items.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                separatorBuilder: (context, index) => const SizedBox(width: 12),
                 itemBuilder: (context, index) =>
                     _KnowledgeCard(item: items[index]),
               ),
@@ -459,7 +459,7 @@ class _KnowledgeCard extends StatelessWidget {
                 height: 105,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const SizedBox(
+                errorBuilder: (context, error, stackTrace) => const SizedBox(
                   height: 105,
                   child: Center(
                     child: Text('🌐', style: TextStyle(fontSize: 42)),
