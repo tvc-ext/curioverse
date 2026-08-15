@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../models/child_profile.dart';
 import '../models/learning_topic.dart';
 
 class _Seed {
@@ -148,14 +149,27 @@ List<QuizQuestion> questionBankFor(String topicId) {
 
 List<QuizQuestion> createQuizSession(
   String topicId, {
+  AgeBand ageBand = AgeBand.maker9to11,
   int size = 10,
   Random? random,
 }) {
   final source = random ?? Random();
   final seeds = [...?_seeds[topicId]]..shuffle(source);
-  return seeds.take(size).map((seed) {
-    return _buildQuestion(seed, source.nextInt(5));
-  }).toList();
+  final variants = switch (ageBand) {
+    // A gentle stretch: mostly direct recall, plus medium reasoning.
+    AgeBand.explorer6to8 => [0, 0, 0, 1, 1, 1, 3, 3, 2, 0],
+    // More application and inference than simple recall.
+    AgeBand.maker9to11 => [0, 1, 1, 2, 2, 3, 3, 4, 1, 2],
+    // A deliberately demanding mix dominated by hard reasoning.
+    AgeBand.creator12to14 => [1, 2, 2, 2, 3, 4, 4, 4, 2, 4],
+  }..shuffle(source);
+  return [
+    for (var index = 0; index < seeds.take(size).length; index++)
+      _buildQuestion(
+        seeds[index],
+        variants[index % variants.length],
+      ),
+  ];
 }
 
 QuizQuestion _buildQuestion(_Seed seed, int variant) {
@@ -180,6 +194,18 @@ QuizQuestion _buildQuestion(_Seed seed, int variant) {
     options: options,
     correctIndex: correctIndex,
     explanation: seed.explanation,
-    difficulty: seed.difficulty,
+    difficulty: _difficultyFor(seed.difficulty, variant),
   );
+}
+
+
+QuizDifficulty _difficultyFor(QuizDifficulty seedDifficulty, int variant) {
+  final variantDifficulty = switch (variant) {
+    0 => QuizDifficulty.easy,
+    1 || 3 => QuizDifficulty.medium,
+    _ => QuizDifficulty.hard,
+  };
+  return seedDifficulty.index > variantDifficulty.index
+      ? seedDifficulty
+      : variantDifficulty;
 }
