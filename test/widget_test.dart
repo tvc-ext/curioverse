@@ -5,7 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  void useTallPhoneSurface(WidgetTester tester) {
+    tester.view.physicalSize = const Size(430, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+  }
+
   testWidgets('new explorer completes safe onboarding', (tester) async {
+    useTallPhoneSurface(tester);
     final store = MemoryProfileStore();
 
     await tester.pumpWidget(CurioVerseApp(profileStore: store));
@@ -29,6 +37,7 @@ void main() {
   });
 
   testWidgets('returning explorer skips onboarding', (tester) async {
+    useTallPhoneSurface(tester);
     const profile = ChildProfile(
       ageBand: AgeBand.creator12to14,
       avatarId: 'astro_owl',
@@ -48,6 +57,7 @@ void main() {
 
   testWidgets('continue is disabled until both choices are selected',
       (tester) async {
+    useTallPhoneSurface(tester);
     await tester.pumpWidget(
       CurioVerseApp(profileStore: MemoryProfileStore()),
     );
