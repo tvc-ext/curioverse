@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../models/child_profile.dart';
@@ -26,6 +28,7 @@ class _BrainArcadeScreenState extends State<BrainArcadeScreen> {
       _Game('🕳️', 'Missing Tile', 'Complete visual and number grids', const Color(0xFFE4E0FF), () => PuzzleRound(title: 'Missing Tile', emoji: '🕳️', gameId: 'game_missing_tile', puzzles: hard ? hardMissing : missing, onCompleted: widget.onCompleted)),
       _Game('🔎', 'Odd One Out', 'Discover the hidden rule', const Color(0xFFDDF6E4), () => PuzzleRound(title: 'Odd One Out', emoji: '🔎', gameId: 'game_odd_one_out', puzzles: hard ? hardOdd : odd, onCompleted: widget.onCompleted)),
       _Game('🔐', 'Code Breaker', 'Decode clever transformations', const Color(0xFFFFE2EA), () => PuzzleRound(title: 'Code Breaker', emoji: '🔐', gameId: 'game_code_breaker', puzzles: hard ? hardCodes : codes, onCompleted: widget.onCompleted)),
+      _Game('👁️', 'Visual Mind Lab', '100 visual memory and attention challenges', const Color(0xFFD9F2FF), () => PuzzleRound(title: 'Visual Mind Lab', emoji: '👁️', gameId: 'game_visual_mind_lab', puzzles: visualPuzzles(widget.ageBand), onCompleted: widget.onCompleted)),
     ];
     return ListView(key: const ValueKey('brain-arcade'), padding: const EdgeInsets.all(20), children: [
       Text('Brain Arcade', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900)),
@@ -66,3 +69,37 @@ const odd = [Puzzle('🐶 🐱 🐰 🚗', ['🐶','🐰','🚗'], 2, 'A car is 
 const hardOdd = [Puzzle('8 27 64 100', ['27','64','100'], 2, '100 is not a cube.'), Puzzle('11 13 17 21', ['13','17','21'], 2, '21 is not prime.'), Puzzle('Mercury Venus Earth Europa', ['Venus','Earth','Europa'], 2, 'Europa is a moon.'), Puzzle('Triangle Square Pentagon Sphere', ['Square','Pentagon','Sphere'], 2, 'Sphere is 3D.'), Puzzle('Photosynthesis Respiration Evaporation Germination', ['Respiration','Evaporation','Germination'], 1, 'Evaporation is not a living process.')];
 const codes = [Puzzle('CAT → DBU. DOG → ?', ['EPH','EOH','FPH'], 0, 'Move every letter forward one.'), Puzzle('2 → 6, 3 → 9, 5 → ?', ['10','15','20'], 1, 'Multiply by three.'), Puzzle('A=1 B=2 C=3. CAB totals…', ['5','6','7'], 1, '3 + 1 + 2 = 6.'), Puzzle('RED → 18-5-4. BLUE starts…', ['2-12','1-11','3-13'], 0, 'Use alphabet positions.'), Puzzle('MOON=4665. MOM=?', ['464','466','456'], 0, 'Replace letters with their digits.')];
 const hardCodes = [Puzzle('CODE → DQGI (+1,+2,+3,+4). MIND → ?', ['NKQH','NKRH','OJQH'], 0, 'Shift successive letters.'), Puzzle('3→12, 5→30, 7→?', ['42','49','56'], 2, 'Use n × (n+1).'), Puzzle('AZ BY CX ?', ['DW','DX','EV'], 0, 'One side rises while the other falls.'), Puzzle('2#3=13, 3#4=25, 4#5=?', ['31','41','45'], 1, 'Add the squares.'), Puzzle('ACE=9, BED=11, FACE=?', ['14','15','16'], 1, 'Add alphabet positions.')];
+
+
+List<Puzzle> visualPuzzles(AgeBand ageBand) {
+  const symbols = [
+    '🚀', '🌙', '⭐', '🪐', '🤖', '🦖', '🐯', '🦉', '🐬', '🐘',
+    '🍎', '🍓', '🌻', '🌈', '⚽', '🎸', '🚲', '🏰', '💎', '🔑',
+  ];
+  final length = switch (ageBand) {
+    AgeBand.explorer6to8 => 4,
+    AgeBand.adventurer9to11 => 6,
+    AgeBand.creator12to14 => 8,
+  };
+  return List.generate(100, (challenge) {
+    final start = (challenge * 7 + ageBand.index * 3) % symbols.length;
+    final sequence = List.generate(
+      length,
+      (index) => symbols[(start + index * (challenge % 4 + 1)) % symbols.length],
+    );
+    final missing = 1 + challenge % (length - 2);
+    final answer = sequence[missing];
+    final visible = [...sequence]..[missing] = '❓';
+    final options = [
+      answer,
+      symbols[(start + length + 3) % symbols.length],
+      symbols[(start + length + 8) % symbols.length],
+    ]..shuffle(Random(challenge + ageBand.index * 1000));
+    return Puzzle(
+      visible.join('  '),
+      options,
+      options.indexOf(answer),
+      'Track the visual step and remember what belongs in position ${missing + 1}.',
+    );
+  });
+}
