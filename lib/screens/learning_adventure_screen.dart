@@ -70,13 +70,18 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
     });
   }
 
-  void startQuiz() {
+  Future<void> startQuiz() async {
+    final questions = await createRemoteQuizSession(
+      topic.id,
+      ageBand: widget.ageBand,
+    );
+    if (!mounted) return;
     setState(() {
       view = _AdventureView.quiz;
       questionIndex = 0;
       selectedAnswer = null;
       score = 0;
-      quizQuestions = createQuizSession(topic.id, ageBand: widget.ageBand);
+      quizQuestions = questions;
     });
   }
 
