@@ -56,7 +56,14 @@ class OpenKnowledgeService implements OpenKnowledgeSource {
   final http.Client client;
 
   static const _titlesByAge = {
-    AgeBand.explorer6to8: ['Moon', 'Dinosaur', 'Ocean', 'Rainbow'],
+    AgeBand.explorer6to8: [
+      'Moon',
+      'Dinosaur',
+      'Ocean',
+      'Chandrayaan-3',
+      'Taj Mahal',
+      'Peacock',
+    ],
     AgeBand.adventurer9to11: [
       'Moon',
       'Solar System',
@@ -64,6 +71,12 @@ class OpenKnowledgeService implements OpenKnowledgeSource {
       'Dinosaur fossil',
       'Octopus',
       'Volcano',
+      'Indian Space Research Organisation',
+      'Chandrayaan-3',
+      'Aditya-L1',
+      'Indus Valley Civilisation',
+      'Ashoka',
+      'Taj Mahal',
     ],
     AgeBand.creator12to14: [
       'Moon',
@@ -74,6 +87,14 @@ class OpenKnowledgeService implements OpenKnowledgeSource {
       'Quantum mechanics',
       'Space exploration',
       'Renewable energy',
+      'Indian Space Research Organisation',
+      'Chandrayaan-3',
+      'Aditya-L1',
+      'Mars Orbiter Mission',
+      'History of India',
+      'Indian independence movement',
+      'Constitution of India',
+      'Ajanta Caves',
     ],
   };
 
