@@ -9,6 +9,7 @@ import 'screens/friends_clubhouse_screen.dart';
 import 'screens/learning_adventure_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/pattern_game_screen.dart';
+import 'screens/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +48,7 @@ class CurioVerseApp extends StatefulWidget {
 }
 
 class _CurioVerseAppState extends State<CurioVerseApp> {
+  bool showSplash = true;
   late ChildProfile? profile = widget.initialProfile;
   late LearningProgress progress =
       widget.initialProgress ?? const LearningProgress();
@@ -96,9 +98,13 @@ class _CurioVerseAppState extends State<CurioVerseApp> {
           ),
         ),
       ),
-      home: profile == null
-          ? OnboardingScreen(onComplete: completeOnboarding)
-          : UniverseShell(
+      home: showSplash
+          ? CurioVerseSplashScreen(
+              onFinished: () => setState(() => showSplash = false),
+            )
+          : profile == null
+              ? OnboardingScreen(onComplete: completeOnboarding)
+              : UniverseShell(
               profile: profile!,
               progress: progress,
               knowledgeSource: knowledgeSource,
@@ -380,7 +386,7 @@ class MissionCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Explore a visual story and answer 3 questions.',
+              'Explore a visual story and answer 10 mixed-level questions.',
               style: TextStyle(color: Color(0xFFDCD8FF), fontSize: 16),
             ),
             const SizedBox(height: 18),
