@@ -70,6 +70,10 @@ jobs:
         if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
         run: flutter build apk --release --target-platform android-arm64 --split-debug-info=build/debug-info --build-name 1.0.0 --build-number ${{ github.run_number }}
 
+      - name: Build emulator-compatible smoke APK
+        if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
+        run: flutter build apk --debug --target-platform android-x64
+
       - name: Enable KVM for Android emulator
         if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
         run: |
@@ -87,8 +91,8 @@ jobs:
           profile: pixel_2
           disable-animations: true
           script: |
-            adb install build/app/outputs/flutter-apk/app-release.apk
-            adb install -r build/app/outputs/flutter-apk/app-release.apk
+            adb install build/app/outputs/flutter-apk/app-debug.apk
+            adb install -r build/app/outputs/flutter-apk/app-debug.apk
             package_name="$(adb shell pm list packages | sed -n 's/package:\(.*curioverse.*\)/\1/p' | tr -d '\r' | head -n 1)"
             test -n "$package_name"
             adb logcat -c
