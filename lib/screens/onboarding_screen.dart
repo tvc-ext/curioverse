@@ -141,11 +141,13 @@ class _StepTitle extends StatelessWidget {
           child: Text('$number', style: const TextStyle(fontWeight: FontWeight.w800)),
         ),
         const SizedBox(width: 10),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w900,
-              ),
+        Expanded(
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
+          ),
         ),
       ],
     );
