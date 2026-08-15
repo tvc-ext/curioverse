@@ -130,6 +130,18 @@ class UniverseShell extends StatefulWidget {
 
 class _UniverseShellState extends State<UniverseShell> {
   int currentIndex = 0;
+  String? launchTopicId;
+  int learningLaunch = 0;
+
+  void openTopic(String topicId) {
+    setState(() {
+      launchTopicId = topicId;
+      learningLaunch++;
+      currentIndex = 1;
+    });
+  }
+
+  void openGame() => setState(() => currentIndex = 2);
 
   static const destinations = [
     NavigationDestination(
@@ -159,9 +171,12 @@ class _UniverseShellState extends State<UniverseShell> {
     final pages = [
       HomeUniverse(
         profile: widget.profile,
-        onStartMission: () => setState(() => currentIndex = 1),
+        onOpenTopic: openTopic,
+        onOpenGame: openGame,
       ),
       LearningAdventureScreen(
+        key: ValueKey('learning-$learningLaunch-$launchTopicId'),
+        initialTopicId: launchTopicId,
         ageBand: widget.profile.ageBand,
         knowledgeSource: widget.knowledgeSource,
         completedTopicIds: widget.progress.completedTopicIds,
@@ -243,12 +258,14 @@ class _UniverseShellState extends State<UniverseShell> {
 class HomeUniverse extends StatelessWidget {
   const HomeUniverse({
     required this.profile,
-    required this.onStartMission,
+    required this.onOpenTopic,
+    required this.onOpenGame,
     super.key,
   });
 
   final ChildProfile profile;
-  final VoidCallback onStartMission;
+  final void Function(String topicId) onOpenTopic;
+  final VoidCallback onOpenGame;
 
   @override
   Widget build(BuildContext context) {
@@ -267,33 +284,37 @@ class HomeUniverse extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         const SizedBox(height: 20),
-        MissionCard(onStart: onStartMission),
+        MissionCard(onStart: () => onOpenTopic('moon_phases')),
         const SizedBox(height: 24),
         const SectionTitle(title: 'Pick a world', action: 'See all'),
         const SizedBox(height: 12),
-        const Wrap(
+        Wrap(
           spacing: 12,
           runSpacing: 12,
           children: [
             WorldCard(
               emoji: '🚀',
               title: 'Space',
-              color: Color(0xFFE3DFFF),
+              color: const Color(0xFFE3DFFF),
+              onTap: () => onOpenTopic('moon_phases'),
             ),
             WorldCard(
               emoji: '🦖',
               title: 'Dinosaurs',
-              color: Color(0xFFD9F7E7),
+              color: const Color(0xFFD9F7E7),
+              onTap: () => onOpenTopic('dinosaur_detective'),
             ),
             WorldCard(
               emoji: '🤖',
               title: 'AI Lab',
-              color: Color(0xFFFFE3D8),
+              color: const Color(0xFFFFE3D8),
+              onTap: () => onOpenTopic('ai_pattern_lab'),
             ),
             WorldCard(
               emoji: '🌊',
               title: 'Oceans',
-              color: Color(0xFFD9F2FF),
+              color: const Color(0xFFD9F2FF),
+              onTap: () => onOpenTopic('ocean_networks'),
             ),
           ],
         ),
@@ -318,7 +339,7 @@ class HomeUniverse extends StatelessWidget {
               child: Text('A tiny logic mission worth 20 energy'),
             ),
             trailing: const Icon(Icons.arrow_forward_rounded),
-            onTap: onStartMission,
+            onTap: onOpenGame,
           ),
         ),
       ],
@@ -382,12 +403,14 @@ class WorldCard extends StatelessWidget {
     required this.emoji,
     required this.title,
     required this.color,
+    required this.onTap,
     super.key,
   });
 
   final String emoji;
   final String title;
   final Color color;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -398,7 +421,7 @@ class WorldCard extends StatelessWidget {
         color: color,
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
-          onTap: () {},
+          onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
