@@ -76,7 +76,7 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
       questionIndex = 0;
       selectedAnswer = null;
       score = 0;
-      quizQuestions = createQuizSession(topic.id);
+      quizQuestions = createQuizSession(topic.id, ageBand: widget.ageBand);
     });
   }
 
