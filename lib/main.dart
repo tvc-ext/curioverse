@@ -7,6 +7,7 @@ import 'data/progress_store.dart';
 import 'models/child_profile.dart';
 import 'screens/learning_adventure_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/pattern_game_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -166,10 +167,11 @@ class _UniverseShellState extends State<UniverseShell> {
         completedTopicIds: widget.progress.completedTopicIds,
         onTopicCompleted: widget.onTopicCompleted,
       ),
-      const PlaceholderPage(
-        icon: Icons.extension,
-        title: 'Brain games',
-        message: 'Pattern, memory and logic missions will live here.',
+      PatternGameScreen(
+        ageBand: widget.profile.ageBand,
+        alreadyCompleted:
+            widget.progress.completed('game_pattern_sprint'),
+        onCompleted: widget.onTopicCompleted,
       ),
       const PlaceholderPage(
         icon: Icons.shield_outlined,
