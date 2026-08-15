@@ -90,7 +90,8 @@ jobs:
                 ref: `tags/${tag}`,
               });
             } catch (error) {
-              if (error.status !== 404) throw error;
+              // GitHub may return 404 or 422 when the tag does not yet exist.
+              if (![404, 422].includes(error.status)) throw error;
             }
 
             await github.rest.git.createRef({
