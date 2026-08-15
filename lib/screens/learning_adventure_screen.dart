@@ -71,10 +71,12 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
   }
 
   Future<void> startQuiz() async {
-    final questions = await createRemoteQuizSession(
-      topic.id,
-      ageBand: widget.ageBand,
-    );
+    final questions = widget.knowledgeSource is MemoryOpenKnowledgeSource
+        ? createQuizSession(topic.id, ageBand: widget.ageBand)
+        : await createRemoteQuizSession(
+            topic.id,
+            ageBand: widget.ageBand,
+          );
     if (!mounted) return;
     setState(() {
       view = _AdventureView.quiz;
