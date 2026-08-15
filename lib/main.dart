@@ -1,9 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() => runApp(const CurioVerseApp());
+import 'data/profile_store.dart';
+import 'models/child_profile.dart';
+import 'screens/onboarding_screen.dart';
 
-class CurioVerseApp extends StatelessWidget {
-  const CurioVerseApp({super.key});
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final preferences = await SharedPreferences.getInstance();
+  final store = SharedPreferencesProfileStore(preferences);
+  runApp(
+    CurioVerseApp(
+      profileStore: store,
+      initialProfile: await store.load(),
+    ),
+  );
+}
+
+class CurioVerseApp extends StatefulWidget {
+  const CurioVerseApp({
+    required this.profileStore,
+    this.initialProfile,
+    super.key,
+  });
+
+  final ProfileStore profileStore;
+  final ChildProfile? initialProfile;
+
+  @override
+  State<CurioVerseApp> createState() => _CurioVerseAppState();
+}
+
+class _CurioVerseAppState extends State<CurioVerseApp> {
+  late ChildProfile? profile = widget.initialProfile;
+
+  Future<void> completeOnboarding(ChildProfile newProfile) async {
+    await widget.profileStore.save(newProfile);
+    setState(() => profile = newProfile);
+  }
+
+  Future<void> resetProfile() async {
+    await widget.profileStore.clear();
+    setState(() => profile = null);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +65,22 @@ class CurioVerseApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const UniverseShell(),
+      home: profile == null
+          ? OnboardingScreen(onComplete: completeOnboarding)
+          : UniverseShell(profile: profile!, onResetProfile: resetProfile),
     );
   }
 }
 
 class UniverseShell extends StatefulWidget {
-  const UniverseShell({super.key});
+  const UniverseShell({
+    required this.profile,
+    required this.onResetProfile,
+    super.key,
+  });
+
+  final ChildProfile profile;
+  final Future<void> Function() onResetProfile;
 
   @override
   State<UniverseShell> createState() => _UniverseShellState();
@@ -67,7 +115,7 @@ class _UniverseShellState extends State<UniverseShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      const HomeUniverse(),
+      HomeUniverse(profile: widget.profile),
       const PlaceholderPage(
         icon: Icons.rocket_launch,
         title: 'Explore worlds',
@@ -92,6 +140,37 @@ class _UniverseShellState extends State<UniverseShell> {
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
         actions: [
+          PopupMenuButton<String>(
+            tooltip: 'Explorer profile',
+            onSelected: (value) {
+              if (value == 'reset') widget.onResetProfile();
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                enabled: false,
+                child: Text(
+                  '${widget.profile.avatar.emoji} ${widget.profile.avatar.alias} · ${widget.profile.ageBand.label}',
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'reset',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.switch_account_outlined),
+                  title: Text('Change explorer'),
+                ),
+              ),
+            ],
+            child: CircleAvatar(
+              backgroundColor: const Color(0xFFEDEAFF),
+              child: Text(
+                widget.profile.avatar.emoji,
+                style: const TextStyle(fontSize: 22),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           Semantics(
             label: 'Curiosity energy: 120',
             child: const Padding(
@@ -115,7 +194,9 @@ class _UniverseShellState extends State<UniverseShell> {
 }
 
 class HomeUniverse extends StatelessWidget {
-  const HomeUniverse({super.key});
+  const HomeUniverse({required this.profile, super.key});
+
+  final ChildProfile profile;
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +204,7 @@ class HomeUniverse extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
       children: [
         Text(
-          'Hello, Nova Fox!',
+          'Hello, ${profile.avatar.alias}!',
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w900,
               ),
