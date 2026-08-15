@@ -14,10 +14,12 @@ class BrainArcadeScreen extends StatefulWidget {
 class _BrainArcadeScreenState extends State<BrainArcadeScreen> {
   Widget? active;
   @override Widget build(BuildContext context) {
-    if (active != null) return Column(children: [
+    if (active != null) {
+      return Column(children: [
       Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: () => setState(() => active = null), icon: const Icon(Icons.arrow_back), label: const Text('Brain Arcade'))),
       Expanded(child: active!),
     ]);
+    }
     final hard = widget.ageBand == AgeBand.creator12to14;
     final games = <_Game>[
       _Game('🧩', 'Pattern Sprint', 'Sequences of shapes, numbers and letters', const Color(0xFFFFE0C2), () => PatternGameScreen(ageBand: widget.ageBand, alreadyCompleted: widget.completedGameIds.contains('game_pattern_sprint'), onCompleted: widget.onCompleted)),
