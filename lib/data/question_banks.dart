@@ -258,7 +258,23 @@ Future<List<QuizQuestion>> createRemoteQuizSession(
         ),
       );
     }).toList();
-    return _selectRemoteSession(bank, topicId, ageBand, size);
+    final historyKey = 'curioverse.question.history.$topicId.${ageBand.name}';
+    final seen = (preferences.getStringList(historyKey) ?? const <String>[])
+        .toSet();
+    var unseen = bank.where((question) => !seen.contains(question.id)).toList();
+    if (unseen.length < size) {
+      seen.clear();
+      unseen = bank;
+    }
+    final session = _selectRemoteSession(
+      unseen,
+      topicId,
+      ageBand,
+      size,
+    );
+    seen.addAll(session.map((question) => question.id));
+    await preferences.setStringList(historyKey, seen.toList());
+    return session;
   } catch (_) {
     return createQuizSession(topicId, ageBand: ageBand, size: size);
   }
