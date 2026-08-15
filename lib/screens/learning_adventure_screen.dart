@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/open_knowledge_service.dart';
+import '../data/question_banks.dart';
 import '../models/child_profile.dart';
 import '../models/learning_topic.dart';
 import 'animal_scanner_screen.dart';
@@ -48,6 +49,7 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
   int questionIndex = 0;
   int? selectedAnswer;
   int score = 0;
+  List<QuizQuestion> quizQuestions = const [];
   bool savingReward = false;
 
   List<LearningTopic> get availableTopics => learningTopics
@@ -68,12 +70,20 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
     });
   }
 
-  void startQuiz() {
+  Future<void> startQuiz() async {
+    final questions = widget.knowledgeSource is MemoryOpenKnowledgeSource
+        ? createQuizSession(topic.id, ageBand: widget.ageBand)
+        : await createRemoteQuizSession(
+            topic.id,
+            ageBand: widget.ageBand,
+          );
+    if (!mounted) return;
     setState(() {
       view = _AdventureView.quiz;
       questionIndex = 0;
       selectedAnswer = null;
       score = 0;
+      quizQuestions = questions;
     });
   }
 
@@ -81,12 +91,12 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
     if (selectedAnswer != null) return;
     setState(() {
       selectedAnswer = index;
-      if (index == topic.questions[questionIndex].correctIndex) score++;
+      if (index == quizQuestions[questionIndex].correctIndex) score++;
     });
   }
 
   Future<void> nextQuestion() async {
-    if (questionIndex < topic.questions.length - 1) {
+    if (questionIndex < quizQuestions.length - 1) {
       setState(() {
         questionIndex++;
         selectedAnswer = null;
@@ -306,7 +316,7 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
           label: Text(
             storyPage < topic.storyPages.length - 1
                 ? 'Next discovery'
-                : 'Take the 3-question challenge',
+                : 'Take the 10-question challenge',
           ),
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(54),
@@ -317,21 +327,29 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
   }
 
   Widget _buildQuiz(BuildContext context) {
-    final question = topic.questions[questionIndex];
+    final question = quizQuestions[questionIndex];
     return ListView(
       key: const ValueKey('topic-quiz'),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
       children: [
         Text(
-          'Question ${questionIndex + 1} of ${topic.questions.length}',
+          'Question ${questionIndex + 1} of ${quizQuestions.length}',
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
         LinearProgressIndicator(
-          value: (questionIndex + 1) / topic.questions.length,
+          value: (questionIndex + 1) / quizQuestions.length,
           minHeight: 8,
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 18),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Chip(
+            avatar: const Icon(Icons.stairs_rounded, size: 18),
+            label: Text(question.difficulty.name.toUpperCase()),
+          ),
+        ),
+        const SizedBox(height: 8),
         const Text('🧠', style: TextStyle(fontSize: 48)),
         const SizedBox(height: 12),
         Text(
@@ -355,6 +373,7 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
             child: Card(
               color: color ?? Colors.white,
               child: InkWell(
+                key: ValueKey('answer-$index'),
                 borderRadius: BorderRadius.circular(24),
                 onTap: () => chooseAnswer(index),
                 child: Padding(
@@ -397,7 +416,7 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
           FilledButton(
             onPressed: nextQuestion,
             child: Text(
-              questionIndex < topic.questions.length - 1
+              questionIndex < quizQuestions.length - 1
                   ? 'Next question'
                   : 'See my result',
             ),
@@ -426,7 +445,7 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              'You solved $score of ${topic.questions.length} questions.',
+              'You solved $score of ${quizQuestions.length} questions.',
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 14),
@@ -488,6 +507,11 @@ class _TopicCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(topic.subtitle),
+                    const SizedBox(height: 6),
+                    const Text(
+                      '100 questions · Easy, Medium & Hard',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                    ),
                   ],
                 ),
               ),

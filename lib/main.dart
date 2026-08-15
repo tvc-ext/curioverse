@@ -5,10 +5,11 @@ import 'data/open_knowledge_service.dart';
 import 'data/profile_store.dart';
 import 'data/progress_store.dart';
 import 'models/child_profile.dart';
+import 'screens/brain_arcade_screen.dart';
 import 'screens/friends_clubhouse_screen.dart';
 import 'screens/learning_adventure_screen.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/pattern_game_screen.dart';
+import 'screens/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,7 @@ class CurioVerseApp extends StatefulWidget {
     this.knowledgeSource,
     this.initialProfile,
     this.initialProgress,
+    this.showSplash = true,
     super.key,
   });
 
@@ -41,12 +43,14 @@ class CurioVerseApp extends StatefulWidget {
   final OpenKnowledgeSource? knowledgeSource;
   final ChildProfile? initialProfile;
   final LearningProgress? initialProgress;
+  final bool showSplash;
 
   @override
   State<CurioVerseApp> createState() => _CurioVerseAppState();
 }
 
 class _CurioVerseAppState extends State<CurioVerseApp> {
+  late bool showSplash = widget.showSplash;
   late ChildProfile? profile = widget.initialProfile;
   late LearningProgress progress =
       widget.initialProgress ?? const LearningProgress();
@@ -96,9 +100,13 @@ class _CurioVerseAppState extends State<CurioVerseApp> {
           ),
         ),
       ),
-      home: profile == null
-          ? OnboardingScreen(onComplete: completeOnboarding)
-          : UniverseShell(
+      home: showSplash
+          ? CurioVerseSplashScreen(
+              onFinished: () => setState(() => showSplash = false),
+            )
+          : profile == null
+              ? OnboardingScreen(onComplete: completeOnboarding)
+              : UniverseShell(
               profile: profile!,
               progress: progress,
               knowledgeSource: knowledgeSource,
@@ -183,10 +191,9 @@ class _UniverseShellState extends State<UniverseShell> {
         completedTopicIds: widget.progress.completedTopicIds,
         onTopicCompleted: widget.onTopicCompleted,
       ),
-      PatternGameScreen(
+      BrainArcadeScreen(
         ageBand: widget.profile.ageBand,
-        alreadyCompleted:
-            widget.progress.completed('game_pattern_sprint'),
+        completedGameIds: widget.progress.completedTopicIds,
         onCompleted: widget.onTopicCompleted,
       ),
       FriendsClubhouseScreen(
@@ -380,7 +387,7 @@ class MissionCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Explore a visual story and answer 3 questions.',
+              'Explore a visual story and answer 10 mixed-level questions.',
               style: TextStyle(color: Color(0xFFDCD8FF), fontSize: 16),
             ),
             const SizedBox(height: 18),
