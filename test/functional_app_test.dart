@@ -12,7 +12,8 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final store = MemoryProfileStore();
-    await tester.pumpWidget(CurioVerseApp(profileStore: store));
+    await tester.pumpWidget(CurioVerseApp(
+        showSplash: false,profileStore: store));
 
     expect(find.text('Welcome to CurioVerse!'), findsOneWidget);
 
