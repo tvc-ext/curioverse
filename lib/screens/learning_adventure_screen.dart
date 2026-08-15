@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/open_knowledge_service.dart';
 import '../models/child_profile.dart';
 import '../models/learning_topic.dart';
+import 'animal_scanner_screen.dart';
 
 class LearningAdventureScreen extends StatefulWidget {
   const LearningAdventureScreen({
@@ -150,7 +151,45 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
+        Card(
+          color: const Color(0xFFDDF6D8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(24),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => const AnimalScannerScreen(),
+              ),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.all(18),
+              child: Row(
+                children: [
+                  Text('📷', style: TextStyle(fontSize: 44)),
+                  SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Scan an animal picture',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text('Private on-device AI identification'),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_rounded),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
         const _SectionHeading(
           icon: Icons.public_rounded,
           title: 'Open Knowledge Stream',
