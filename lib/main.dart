@@ -5,6 +5,7 @@ import 'data/open_knowledge_service.dart';
 import 'data/profile_store.dart';
 import 'data/progress_store.dart';
 import 'models/child_profile.dart';
+import 'screens/brain_arcade_screen.dart';
 import 'screens/friends_clubhouse_screen.dart';
 import 'screens/learning_adventure_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -189,10 +190,9 @@ class _UniverseShellState extends State<UniverseShell> {
         completedTopicIds: widget.progress.completedTopicIds,
         onTopicCompleted: widget.onTopicCompleted,
       ),
-      PatternGameScreen(
+      BrainArcadeScreen(
         ageBand: widget.profile.ageBand,
-        alreadyCompleted:
-            widget.progress.completed('game_pattern_sprint'),
+        completedGameIds: widget.progress.completedTopicIds,
         onCompleted: widget.onTopicCompleted,
       ),
       FriendsClubhouseScreen(
