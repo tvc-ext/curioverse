@@ -61,6 +61,7 @@ jobs:
           test -x "$sdkmanager_path"
           test -x "$avdmanager_path"
           test -x "$adb_path"
+          export adb_path
           yes | "$sdkmanager_path" "platform-tools" "emulator" "platforms;android-35" "system-images;android-35;google_apis;x86_64" >/dev/null
           echo no | "$avdmanager_path" create avd --force --name curioverse-smoke --package "system-images;android-35;google_apis;x86_64"
           "$ANDROID_HOME/emulator/emulator"             -avd curioverse-smoke             -no-window             -no-audio             -no-boot-anim             -gpu swiftshader_indirect             >/tmp/curioverse-emulator.log 2>&1 &
