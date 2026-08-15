@@ -194,7 +194,7 @@ const learningTopics = [
         explanation: 'Biodiversity provides multiple relationships and responses to disturbance.',
       ),
     ],
-  ),,
+  ),
   LearningTopic(
     id: 'isro_mission_lab',
     emoji: '🇮🇳',
