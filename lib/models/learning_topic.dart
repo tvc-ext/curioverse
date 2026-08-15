@@ -194,5 +194,81 @@ const learningTopics = [
         explanation: 'Biodiversity provides multiple relationships and responses to disturbance.',
       ),
     ],
+  ),,
+  LearningTopic(
+    id: 'isro_mission_lab',
+    emoji: '🇮🇳',
+    title: 'ISRO Mission Lab',
+    subtitle: 'Explore India’s journeys to space',
+    colorValue: 0xFFFFE7C2,
+    ageBands: {
+      AgeBand.explorer6to8,
+      AgeBand.adventurer9to11,
+      AgeBand.creator12to14,
+    },
+    storyTitle: 'From India to the Moon, Mars and Sun',
+    storyPages: [
+      'ISRO is India’s space agency. Its rockets carry satellites and science missions beyond Earth while teams on the ground guide each journey.',
+      'Chandrayaan-3 carried the Vikram lander and Pragyan rover to the Moon. The mission made India the first country to land near the lunar south polar region.',
+      'India also sent the Mars Orbiter Mission toward Mars and Aditya-L1 to study the Sun. Each mission uses instruments to turn light, heat and motion into scientific data.',
+    ],
+    questions: [
+      QuizQuestion(
+        prompt: 'What was Vikram in the Chandrayaan-3 mission?',
+        options: ['A lunar lander', 'A telescope on Earth', 'A submarine'],
+        correctIndex: 0,
+        explanation: 'Vikram was the lander; Pragyan was the rover it carried.',
+      ),
+      QuizQuestion(
+        prompt: 'What does Aditya-L1 study?',
+        options: ['The Sun', 'Ocean reefs', 'Dinosaur fossils'],
+        correctIndex: 0,
+        explanation: 'Aditya-L1 observes the Sun and helps scientists study solar activity and space weather.',
+      ),
+      QuizQuestion(
+        prompt: 'Why do space missions carry scientific instruments?',
+        options: ['To collect measurements', 'Only for decoration', 'To make sound in space'],
+        correctIndex: 0,
+        explanation: 'Instruments collect measurements that scientists study back on Earth.',
+      ),
+    ],
   ),
+  LearningTopic(
+    id: 'india_time_travel',
+    emoji: '🏛️',
+    title: 'India Time Travel',
+    subtitle: 'Follow clues across Indian history',
+    colorValue: 0xFFE8F4D8,
+    ageBands: {
+      AgeBand.explorer6to8,
+      AgeBand.adventurer9to11,
+      AgeBand.creator12to14,
+    },
+    storyTitle: 'Many eras, ideas and voices',
+    storyPages: [
+      'Indian history stretches across thousands of years. Archaeologists study cities of the Indus Valley, including carefully planned streets, wells and drainage systems.',
+      'Emperor Ashoka ruled much of the subcontinent in the third century BCE. His messages carved on rocks and pillars encouraged ethical conduct and care for people and animals.',
+      'Centuries later, India’s freedom movement brought together many leaders, communities and methods. Independence arrived in 1947, followed by the adoption of India’s Constitution in 1950.',
+    ],
+    questions: [
+      QuizQuestion(
+        prompt: 'How do we learn about Indus Valley cities?',
+        options: ['Archaeological evidence', 'Satellite television', 'Robot diaries'],
+        correctIndex: 0,
+        explanation: 'Buildings, objects, seals and other archaeological evidence reveal clues about ancient life.',
+      ),
+      QuizQuestion(
+        prompt: 'Where were many of Ashoka’s messages recorded?',
+        options: ['On rocks and pillars', 'In mobile apps', 'On spacecraft'],
+        correctIndex: 0,
+        explanation: 'Ashokan edicts were inscribed on rocks and pillars across his empire.',
+      ),
+      QuizQuestion(
+        prompt: 'When did the Constitution of India come into effect?',
+        options: ['1950', '1850', '2050'],
+        correctIndex: 0,
+        explanation: 'The Constitution came into effect on 26 January 1950.',
+      ),
+    ],
+  )
 ];
