@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'data/open_knowledge_service.dart';
 import 'data/profile_store.dart';
+import 'data/progress_store.dart';
 import 'models/child_profile.dart';
+import 'screens/friends_clubhouse_screen.dart';
+import 'screens/learning_adventure_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/pattern_game_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final preferences = await SharedPreferences.getInstance();
-  final store = SharedPreferencesProfileStore(preferences);
+  final profileStore = SharedPreferencesProfileStore(preferences);
+  final progressStore = SharedPreferencesProgressStore(preferences);
   runApp(
     CurioVerseApp(
-      profileStore: store,
-      initialProfile: await store.load(),
+      profileStore: profileStore,
+      progressStore: progressStore,
+      knowledgeSource: OpenKnowledgeService(preferences: preferences),
+      initialProfile: await profileStore.load(),
+      initialProgress: await progressStore.load(),
     ),
   );
 }
@@ -20,12 +29,18 @@ Future<void> main() async {
 class CurioVerseApp extends StatefulWidget {
   const CurioVerseApp({
     required this.profileStore,
+    this.progressStore,
+    this.knowledgeSource,
     this.initialProfile,
+    this.initialProgress,
     super.key,
   });
 
   final ProfileStore profileStore;
+  final ProgressStore? progressStore;
+  final OpenKnowledgeSource? knowledgeSource;
   final ChildProfile? initialProfile;
+  final LearningProgress? initialProgress;
 
   @override
   State<CurioVerseApp> createState() => _CurioVerseAppState();
@@ -33,15 +48,31 @@ class CurioVerseApp extends StatefulWidget {
 
 class _CurioVerseAppState extends State<CurioVerseApp> {
   late ChildProfile? profile = widget.initialProfile;
+  late LearningProgress progress =
+      widget.initialProgress ?? const LearningProgress();
+  late final ProgressStore progressStore =
+      widget.progressStore ?? MemoryProgressStore(progress);
+  late final OpenKnowledgeSource knowledgeSource =
+      widget.knowledgeSource ?? const MemoryOpenKnowledgeSource();
 
   Future<void> completeOnboarding(ChildProfile newProfile) async {
     await widget.profileStore.save(newProfile);
     setState(() => profile = newProfile);
   }
 
+  Future<void> completeTopic(String topicId, int reward) async {
+    final updated = progress.complete(topicId, reward);
+    await progressStore.save(updated);
+    setState(() => progress = updated);
+  }
+
   Future<void> resetProfile() async {
     await widget.profileStore.clear();
-    setState(() => profile = null);
+    await progressStore.clear();
+    setState(() {
+      profile = null;
+      progress = const LearningProgress();
+    });
   }
 
   @override
@@ -67,7 +98,13 @@ class _CurioVerseAppState extends State<CurioVerseApp> {
       ),
       home: profile == null
           ? OnboardingScreen(onComplete: completeOnboarding)
-          : UniverseShell(profile: profile!, onResetProfile: resetProfile),
+          : UniverseShell(
+              profile: profile!,
+              progress: progress,
+              knowledgeSource: knowledgeSource,
+              onTopicCompleted: completeTopic,
+              onResetProfile: resetProfile,
+            ),
     );
   }
 }
@@ -75,11 +112,17 @@ class _CurioVerseAppState extends State<CurioVerseApp> {
 class UniverseShell extends StatefulWidget {
   const UniverseShell({
     required this.profile,
+    required this.progress,
+    required this.knowledgeSource,
+    required this.onTopicCompleted,
     required this.onResetProfile,
     super.key,
   });
 
   final ChildProfile profile;
+  final LearningProgress progress;
+  final OpenKnowledgeSource knowledgeSource;
+  final Future<void> Function(String topicId, int reward) onTopicCompleted;
   final Future<void> Function() onResetProfile;
 
   @override
@@ -88,6 +131,18 @@ class UniverseShell extends StatefulWidget {
 
 class _UniverseShellState extends State<UniverseShell> {
   int currentIndex = 0;
+  String? launchTopicId;
+  int learningLaunch = 0;
+
+  void openTopic(String topicId) {
+    setState(() {
+      launchTopicId = topicId;
+      learningLaunch++;
+      currentIndex = 1;
+    });
+  }
+
+  void openGame() => setState(() => currentIndex = 2);
 
   static const destinations = [
     NavigationDestination(
@@ -115,21 +170,30 @@ class _UniverseShellState extends State<UniverseShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomeUniverse(profile: widget.profile),
-      const PlaceholderPage(
-        icon: Icons.rocket_launch,
-        title: 'Explore worlds',
-        message: 'Science, nature, space, inventions and more are coming.',
+      HomeUniverse(
+        profile: widget.profile,
+        onOpenTopic: openTopic,
+        onOpenGame: openGame,
       ),
-      const PlaceholderPage(
-        icon: Icons.extension,
-        title: 'Brain games',
-        message: 'Pattern, memory and logic missions will live here.',
+      LearningAdventureScreen(
+        key: ValueKey('learning-$learningLaunch-$launchTopicId'),
+        initialTopicId: launchTopicId,
+        ageBand: widget.profile.ageBand,
+        knowledgeSource: widget.knowledgeSource,
+        completedTopicIds: widget.progress.completedTopicIds,
+        onTopicCompleted: widget.onTopicCompleted,
       ),
-      const PlaceholderPage(
-        icon: Icons.shield_outlined,
-        title: 'Friends clubhouse',
-        message: 'Only parent-approved aliases and invite codes—never real names.',
+      PatternGameScreen(
+        ageBand: widget.profile.ageBand,
+        alreadyCompleted:
+            widget.progress.completed('game_pattern_sprint'),
+        onCompleted: widget.onTopicCompleted,
+      ),
+      FriendsClubhouseScreen(
+        profile: widget.profile,
+        alreadyCompleted:
+            widget.progress.completed('clubhouse_team_mission'),
+        onCompleted: widget.onTopicCompleted,
       ),
     ];
 
@@ -173,11 +237,11 @@ class _UniverseShellState extends State<UniverseShell> {
           const SizedBox(width: 8),
           Semantics(
             label: 'Curiosity energy: 120',
-            child: const Padding(
-              padding: EdgeInsets.only(right: 16),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16),
               child: Chip(
-                avatar: Icon(Icons.bolt, color: Color(0xFFFF8A00)),
-                label: Text('120'),
+                avatar: const Icon(Icons.bolt, color: Color(0xFFFF8A00)),
+                label: Text('${widget.progress.energy}'),
               ),
             ),
           ),
@@ -194,9 +258,16 @@ class _UniverseShellState extends State<UniverseShell> {
 }
 
 class HomeUniverse extends StatelessWidget {
-  const HomeUniverse({required this.profile, super.key});
+  const HomeUniverse({
+    required this.profile,
+    required this.onOpenTopic,
+    required this.onOpenGame,
+    super.key,
+  });
 
   final ChildProfile profile;
+  final void Function(String topicId) onOpenTopic;
+  final VoidCallback onOpenGame;
 
   @override
   Widget build(BuildContext context) {
@@ -215,33 +286,37 @@ class HomeUniverse extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         const SizedBox(height: 20),
-        const MissionCard(),
+        MissionCard(onStart: () => onOpenTopic('moon_phases')),
         const SizedBox(height: 24),
         const SectionTitle(title: 'Pick a world', action: 'See all'),
         const SizedBox(height: 12),
-        const Wrap(
+        Wrap(
           spacing: 12,
           runSpacing: 12,
           children: [
             WorldCard(
               emoji: '🚀',
               title: 'Space',
-              color: Color(0xFFE3DFFF),
+              color: const Color(0xFFE3DFFF),
+              onTap: () => onOpenTopic('moon_phases'),
             ),
             WorldCard(
               emoji: '🦖',
               title: 'Dinosaurs',
-              color: Color(0xFFD9F7E7),
+              color: const Color(0xFFD9F7E7),
+              onTap: () => onOpenTopic('dinosaur_detective'),
             ),
             WorldCard(
               emoji: '🤖',
               title: 'AI Lab',
-              color: Color(0xFFFFE3D8),
+              color: const Color(0xFFFFE3D8),
+              onTap: () => onOpenTopic('ai_pattern_lab'),
             ),
             WorldCard(
               emoji: '🌊',
               title: 'Oceans',
-              color: Color(0xFFD9F2FF),
+              color: const Color(0xFFD9F2FF),
+              onTap: () => onOpenTopic('ocean_networks'),
             ),
           ],
         ),
@@ -266,7 +341,7 @@ class HomeUniverse extends StatelessWidget {
               child: Text('A tiny logic mission worth 20 energy'),
             ),
             trailing: const Icon(Icons.arrow_forward_rounded),
-            onTap: () {},
+            onTap: onOpenGame,
           ),
         ),
       ],
@@ -275,7 +350,9 @@ class HomeUniverse extends StatelessWidget {
 }
 
 class MissionCard extends StatelessWidget {
-  const MissionCard({super.key});
+  const MissionCard({required this.onStart, super.key});
+
+  final VoidCallback onStart;
 
   @override
   Widget build(BuildContext context) {
@@ -312,7 +389,7 @@ class MissionCard extends StatelessWidget {
                 backgroundColor: const Color(0xFFFFCB67),
                 foregroundColor: const Color(0xFF2D2475),
               ),
-              onPressed: () {},
+              onPressed: onStart,
               icon: const Icon(Icons.play_arrow_rounded),
               label: const Text('Start mission'),
             ),
@@ -328,12 +405,14 @@ class WorldCard extends StatelessWidget {
     required this.emoji,
     required this.title,
     required this.color,
+    required this.onTap,
     super.key,
   });
 
   final String emoji;
   final String title;
   final Color color;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -344,7 +423,7 @@ class WorldCard extends StatelessWidget {
         color: color,
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
-          onTap: () {},
+          onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
