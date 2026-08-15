@@ -49,9 +49,11 @@ jobs:
         run: flutter test
 
       - name: Build release APK
+        if: github.event_name != 'pull_request'
         run: flutter build apk --release
 
       - name: Prepare stable APK filename
+        if: github.event_name != 'pull_request'
         run: cp build/app/outputs/flutter-apk/app-release.apk curioverse-latest.apk
 
       - name: Replace the single GitHub Release
