@@ -270,7 +270,7 @@ const learningTopics = [
         explanation: 'The Constitution came into effect on 26 January 1950.',
       ),
     ],
-  )
+  ),
   LearningTopic(
     id: 'seven_wonders',
     emoji: '🌍',
