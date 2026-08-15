@@ -1,17 +1,23 @@
 import 'child_profile.dart';
 
+enum QuizDifficulty { easy, medium, hard }
+
 class QuizQuestion {
   const QuizQuestion({
     required this.prompt,
     required this.options,
     required this.correctIndex,
     required this.explanation,
+    this.id = '',
+    this.difficulty = QuizDifficulty.easy,
   });
 
   final String prompt;
   final List<String> options;
   final int correctIndex;
   final String explanation;
+  final String id;
+  final QuizDifficulty difficulty;
 }
 
 class LearningTopic {
