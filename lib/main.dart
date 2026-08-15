@@ -9,7 +9,6 @@ import 'screens/brain_arcade_screen.dart';
 import 'screens/friends_clubhouse_screen.dart';
 import 'screens/learning_adventure_screen.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/pattern_game_screen.dart';
 import 'screens/splash_screen.dart';
 
 Future<void> main() async {
