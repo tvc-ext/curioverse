@@ -34,6 +34,7 @@ class CurioVerseApp extends StatefulWidget {
     this.knowledgeSource,
     this.initialProfile,
     this.initialProgress,
+    this.showSplash = true,
     super.key,
   });
 
@@ -42,13 +43,14 @@ class CurioVerseApp extends StatefulWidget {
   final OpenKnowledgeSource? knowledgeSource;
   final ChildProfile? initialProfile;
   final LearningProgress? initialProgress;
+  final bool showSplash;
 
   @override
   State<CurioVerseApp> createState() => _CurioVerseAppState();
 }
 
 class _CurioVerseAppState extends State<CurioVerseApp> {
-  bool showSplash = true;
+  late bool showSplash = widget.showSplash;
   late ChildProfile? profile = widget.initialProfile;
   late LearningProgress progress =
       widget.initialProgress ?? const LearningProgress();
