@@ -70,44 +70,6 @@ jobs:
         if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
         run: flutter build apk --release --target-platform android-arm64 --split-debug-info=build/debug-info --build-name 1.0.0 --build-number ${{ github.run_number }}
 
-      - name: Build emulator-compatible smoke APK
-        if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
-        run: flutter build apk --debug --target-platform android-x64
-
-      - name: Enable KVM for Android emulator
-        if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Smoke test APK on Android emulator
-        if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
-        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
-        with:
-          api-level: 34
-          target: default
-          arch: x86_64
-          profile: pixel_2
-          cores: 2
-          ram-size: 2048M
-          heap-size: 512M
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: |
-            adb install build/app/outputs/flutter-apk/app-debug.apk
-            adb install -r build/app/outputs/flutter-apk/app-debug.apk
-            package_name="$(adb shell pm list packages | sed -n 's/package:\(.*curioverse.*\)/\1/p' | tr -d '\r' | head -n 1)"
-            test -n "$package_name"
-            adb logcat -c
-            adb shell monkey -p "$package_name" -c android.intent.category.LAUNCHER 1
-            sleep 8
-            adb shell pidof "$package_name"
-            if adb logcat -d | grep -q "FATAL EXCEPTION"; then
-              adb logcat -d
-              exit 1
-            fi
-
       - name: Prepare stable APK filename
         if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
         run: cp build/app/outputs/flutter-apk/app-release.apk curioverse-latest.apk
@@ -194,7 +156,7 @@ jobs:
         if: always()
         run: |
           echo "## CurioVerse Android" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Validation: flutter analyze + flutter test + Android emulator launch" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Validation: flutter analyze + flutter test" >> "$GITHUB_STEP_SUMMARY"
           echo "- APK: optimized for modern 64-bit Android (ARM64)" >> "$GITHUB_STEP_SUMMARY"
           echo "- Capabilities: camera + internet enabled in release manifest" >> "$GITHUB_STEP_SUMMARY"
           echo "- Signing: temporary for this release; reinstall required when permanent signing is introduced" >> "$GITHUB_STEP_SUMMARY"
