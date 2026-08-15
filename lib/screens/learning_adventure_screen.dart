@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/open_knowledge_service.dart';
+import '../data/question_banks.dart';
 import '../models/child_profile.dart';
 import '../models/learning_topic.dart';
 import 'animal_scanner_screen.dart';
@@ -48,6 +49,7 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
   int questionIndex = 0;
   int? selectedAnswer;
   int score = 0;
+  List<QuizQuestion> quizQuestions = const [];
   bool savingReward = false;
 
   List<LearningTopic> get availableTopics => learningTopics
@@ -74,6 +76,7 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
       questionIndex = 0;
       selectedAnswer = null;
       score = 0;
+      quizQuestions = createQuizSession(topic.id);
     });
   }
 
@@ -81,12 +84,12 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
     if (selectedAnswer != null) return;
     setState(() {
       selectedAnswer = index;
-      if (index == topic.questions[questionIndex].correctIndex) score++;
+      if (index == quizQuestions[questionIndex].correctIndex) score++;
     });
   }
 
   Future<void> nextQuestion() async {
-    if (questionIndex < topic.questions.length - 1) {
+    if (questionIndex < quizQuestions.length - 1) {
       setState(() {
         questionIndex++;
         selectedAnswer = null;
@@ -306,7 +309,7 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
           label: Text(
             storyPage < topic.storyPages.length - 1
                 ? 'Next discovery'
-                : 'Take the 3-question challenge',
+                : 'Take the 10-question challenge',
           ),
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(54),
