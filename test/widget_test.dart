@@ -24,7 +24,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('6–8'));
+    await tester.tap(find.text('9–11'));
     await tester.ensureVisible(find.text('Nova Fox'));
     await tester.tap(find.text('Nova Fox'));
     await tester.ensureVisible(find.text('Enter CurioVerse'));
@@ -36,7 +36,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hello, Nova Fox!'), findsOneWidget);
-    expect(store.profile?.ageBand, AgeBand.explorer6to8);
+    expect(store.profile?.ageBand, AgeBand.adventurer9to11);
     expect(store.profile?.avatarId, 'nova_fox');
   });
 
