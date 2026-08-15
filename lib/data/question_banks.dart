@@ -149,7 +149,7 @@ List<QuizQuestion> questionBankFor(String topicId) {
 
 List<QuizQuestion> createQuizSession(
   String topicId, {
-  AgeBand ageBand = AgeBand.maker9to11,
+  AgeBand ageBand = AgeBand.adventurer9to11,
   int size = 10,
   Random? random,
 }) {
@@ -159,7 +159,7 @@ List<QuizQuestion> createQuizSession(
     // A gentle stretch: mostly direct recall, plus medium reasoning.
     AgeBand.explorer6to8 => [0, 0, 0, 1, 1, 1, 3, 3, 2, 0],
     // More application and inference than simple recall.
-    AgeBand.maker9to11 => [0, 1, 1, 2, 2, 3, 3, 4, 1, 2],
+    AgeBand.adventurer9to11 => [0, 1, 1, 2, 2, 3, 3, 4, 1, 2],
     // A deliberately demanding mix dominated by hard reasoning.
     AgeBand.creator12to14 => [1, 2, 2, 2, 3, 4, 4, 4, 2, 4],
   }..shuffle(source);
