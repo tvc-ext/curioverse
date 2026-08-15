@@ -88,12 +88,25 @@ class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return switch (view) {
+    final child = switch (view) {
       _AdventureView.catalog => _buildCatalog(context),
       _AdventureView.story => _buildStory(context),
       _AdventureView.quiz => _buildQuiz(context),
       _AdventureView.result => _buildResult(context),
     };
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      switchInCurve: Curves.easeOutBack,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.97, end: 1).animate(animation),
+          child: child,
+        ),
+      ),
+      child: child,
+    );
   }
 
   Widget _buildCatalog(BuildContext context) {
