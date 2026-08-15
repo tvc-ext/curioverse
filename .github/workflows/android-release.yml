@@ -67,18 +67,18 @@ jobs:
         run: flutter test
 
       - name: Build release APK
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
         run: flutter build apk --release --target-platform android-arm64 --split-debug-info=build/debug-info --build-name 1.0.0 --build-number ${{ github.run_number }}
 
       - name: Enable KVM for Android emulator
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
       - name: Smoke test APK on Android emulator
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 35
@@ -101,11 +101,11 @@ jobs:
             fi
 
       - name: Prepare stable APK filename
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
         run: cp build/app/outputs/flutter-apk/app-release.apk curioverse-latest.apk
 
       - name: Replace the single GitHub Release
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || github.head_ref == 'agent/release-latest'
         uses: actions/github-script@v7
         env:
           APK_PATH: curioverse-latest.apk
