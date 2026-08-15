@@ -16,13 +16,15 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: PatternGameScreen(
+        home: Scaffold(
+          body: PatternGameScreen(
           ageBand: AgeBand.adventurer9to11,
           alreadyCompleted: false,
           onCompleted: (gameId, earned) async {
             completedGame = gameId;
             reward = earned;
           },
+          ),
         ),
       ),
     );
