@@ -144,11 +144,27 @@ class _PatternGameScreenState extends State<PatternGameScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => switch (view) {
-        _GameView.intro => _intro(context),
-        _GameView.playing => _playing(context),
-        _GameView.result => _result(context),
-      };
+  Widget build(BuildContext context) {
+    final child = switch (view) {
+      _GameView.intro => _intro(context),
+      _GameView.playing => _playing(context),
+      _GameView.result => _result(context),
+    };
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 320),
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.06, 0),
+            end: Offset.zero,
+          ).animate(animation),
+          child: child,
+        ),
+      ),
+      child: child,
+    );
+  }
 
   Widget _intro(BuildContext context) {
     return Center(
