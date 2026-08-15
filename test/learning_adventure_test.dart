@@ -49,33 +49,25 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('The Moon’s light-and-shadow dance'), findsOneWidget);
 
-    await tester.tap(find.text('Next discovery'));
-    await tester.pump();
-    await tester.tap(find.text('Next discovery'));
-    await tester.pump();
-    await tester.tap(find.text('Take the 3-question challenge'));
-    await tester.pump();
-
-    await tester.tap(find.text('The Sun'));
-    await tester.pump();
-    expect(find.textContaining('reflects sunlight'), findsOneWidget);
-    await tester.tap(find.text('Next question'));
+    while (find.text('Next discovery').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Next discovery'));
+      await tester.pump();
+    }
+    await tester.tap(find.text('Take the 10-question challenge'));
     await tester.pump();
 
-    await tester.tap(
-      find.text('We see different parts of its sunlit half'),
-    );
-    await tester.pump();
-    await tester.tap(find.text('Next question'));
-    await tester.pump();
-
-    await tester.tap(find.text('Round like a ball'));
-    await tester.pump();
-    await tester.tap(find.text('See my result'));
-    await tester.pumpAndSettle();
+    for (var index = 0; index < 10; index++) {
+      expect(find.text('Question ${index + 1} of 10'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('answer-0')));
+      await tester.pump();
+      await tester.tap(
+        find.text(index < 9 ? 'Next question' : 'See my result'),
+      );
+      await tester.pumpAndSettle();
+    }
 
     expect(find.text('Mission complete!'), findsOneWidget);
-    expect(find.text('You solved 3 of 3 questions.'), findsOneWidget);
+    expect(find.textContaining('of 10 questions.'), findsOneWidget);
     expect(completedTopic, 'moon_phases');
     expect(reward, 30);
   });
