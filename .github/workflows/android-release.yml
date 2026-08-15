@@ -66,48 +66,6 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Configure permanent Android signing
-        if: github.event_name != 'pull_request'
-        env:
-          CURIOVERSE_KEYSTORE_BASE64: ${{ secrets.CURIOVERSE_KEYSTORE_BASE64 }}
-          CURIOVERSE_KEY_ALIAS: ${{ secrets.CURIOVERSE_KEY_ALIAS }}
-          CURIOVERSE_KEY_PASSWORD: ${{ secrets.CURIOVERSE_KEY_PASSWORD }}
-          CURIOVERSE_STORE_PASSWORD: ${{ secrets.CURIOVERSE_STORE_PASSWORD }}
-        run: |
-          test -n "$CURIOVERSE_KEYSTORE_BASE64"
-          test -n "$CURIOVERSE_KEY_ALIAS"
-          test -n "$CURIOVERSE_KEY_PASSWORD"
-          test -n "$CURIOVERSE_STORE_PASSWORD"
-          printf '%s' "$CURIOVERSE_KEYSTORE_BASE64" | base64 --decode > android/app/curioverse-release.jks
-          {
-            echo "storeFile=curioverse-release.jks"
-            echo "storePassword=$CURIOVERSE_STORE_PASSWORD"
-            echo "keyAlias=$CURIOVERSE_KEY_ALIAS"
-            echo "keyPassword=$CURIOVERSE_KEY_PASSWORD"
-          } > android/key.properties
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path("android/app/build.gradle.kts")
-          source = path.read_text()
-          signing = """    signingConfigs {
-                  create("release") {
-                      val properties = java.util.Properties()
-                      properties.load(rootProject.file("key.properties").inputStream())
-                      keyAlias = properties.getProperty("keyAlias")
-                      keyPassword = properties.getProperty("keyPassword")
-                      storeFile = file(properties.getProperty("storeFile"))
-                      storePassword = properties.getProperty("storePassword")
-                  }
-              }
-          """
-          source = source.replace("    buildTypes {", signing + "    buildTypes {")
-          source = source.replace(
-              "signingConfig = signingConfigs.getByName(\"debug\")",
-              "signingConfig = signingConfigs.getByName(\"release\")",
-          )
-          path.write_text(source)
-          PY
-
       - name: Build release APK
         if: github.event_name != 'pull_request'
         run: flutter build apk --release --target-platform android-arm64 --split-debug-info=build/debug-info --build-name 1.0.0 --build-number ${{ github.run_number }}
@@ -231,5 +189,5 @@ jobs:
           echo "- Validation: flutter analyze + flutter test + Android emulator launch" >> "$GITHUB_STEP_SUMMARY"
           echo "- APK: optimized for modern 64-bit Android (ARM64)" >> "$GITHUB_STEP_SUMMARY"
           echo "- Capabilities: camera + internet enabled in release manifest" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Updates: stable com.tvcext.curioverse ID, permanent signing, increasing build number" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Signing: temporary for this release; reinstall required when permanent signing is introduced" >> "$GITHUB_STEP_SUMMARY"
           echo "- Retention: one replaceable GitHub Release tagged latest" >> "$GITHUB_STEP_SUMMARY"
