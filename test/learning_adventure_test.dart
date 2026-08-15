@@ -2,6 +2,7 @@ import 'package:curioverse/data/open_knowledge_service.dart';
 import 'package:curioverse/data/progress_store.dart';
 import 'package:curioverse/models/child_profile.dart';
 import 'package:curioverse/screens/learning_adventure_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
