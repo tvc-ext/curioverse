@@ -258,7 +258,7 @@ Future<List<QuizQuestion>> createRemoteQuizSession(
         ),
       );
     }).toList();
-    return _selectRemoteSession(bank, ageBand, size);
+    return _selectRemoteSession(bank, topicId, ageBand, size);
   } catch (_) {
     return createQuizSession(topicId, ageBand: ageBand, size: size);
   }
@@ -266,6 +266,7 @@ Future<List<QuizQuestion>> createRemoteQuizSession(
 
 List<QuizQuestion> _selectRemoteSession(
   List<QuizQuestion> bank,
+  String topicId,
   AgeBand ageBand,
   int size,
 ) {
@@ -285,5 +286,5 @@ List<QuizQuestion> _selectRemoteSession(
   }
   return selected.length == size
       ? selected
-      : createQuizSession(ageBand: ageBand, topicId, size: size);
+      : createQuizSession(topicId, ageBand: ageBand, size: size);
 }
