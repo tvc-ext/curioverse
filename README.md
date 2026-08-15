@@ -31,3 +31,6 @@ flutter test
 ## Status
 
 Early foundation / prototype.
+
+
+Release channel: latest APK, validated on Android emulator.
