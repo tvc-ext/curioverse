@@ -63,6 +63,9 @@ class OpenKnowledgeService implements OpenKnowledgeSource {
       'Chandrayaan-3',
       'Taj Mahal',
       'Peacock',
+      'Tiger',
+      'Elephant',
+      'New 7 Wonders of the World',
     ],
     AgeBand.adventurer9to11: [
       'Moon',
@@ -77,6 +80,10 @@ class OpenKnowledgeService implements OpenKnowledgeSource {
       'Indus Valley Civilisation',
       'Ashoka',
       'Taj Mahal',
+      'New 7 Wonders of the World',
+      'Tiger',
+      'Indian elephant',
+      'Indian peafowl',
     ],
     AgeBand.creator12to14: [
       'Moon',
@@ -95,6 +102,12 @@ class OpenKnowledgeService implements OpenKnowledgeSource {
       'Indian independence movement',
       'Constitution of India',
       'Ajanta Caves',
+      'New 7 Wonders of the World',
+      'Human evolution',
+      'Homo sapiens',
+      'Tiger',
+      'Indian elephant',
+      'Indian peafowl',
     ],
   };
 
