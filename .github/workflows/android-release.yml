@@ -113,7 +113,7 @@ jobs:
                 'The previous release and APK are replaced automatically.',
               ].join('\n'),
               draft: false,
-              prerelease: true,
+              prerelease: false,
               make_latest: 'true',
             });
 
