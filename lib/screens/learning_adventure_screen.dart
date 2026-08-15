@@ -10,6 +10,7 @@ class LearningAdventureScreen extends StatefulWidget {
     required this.knowledgeSource,
     required this.completedTopicIds,
     required this.onTopicCompleted,
+    this.initialTopicId,
     super.key,
   });
 
@@ -17,6 +18,7 @@ class LearningAdventureScreen extends StatefulWidget {
   final OpenKnowledgeSource knowledgeSource;
   final Set<String> completedTopicIds;
   final Future<void> Function(String topicId, int reward) onTopicCompleted;
+  final String? initialTopicId;
 
   @override
   State<LearningAdventureScreen> createState() =>
@@ -28,6 +30,19 @@ enum _AdventureView { catalog, story, quiz, result }
 class _LearningAdventureScreenState extends State<LearningAdventureScreen> {
   _AdventureView view = _AdventureView.catalog;
   LearningTopic topic = moonTopic;
+
+  @override
+  void initState() {
+    super.initState();
+    final requestedId = widget.initialTopicId;
+    if (requestedId == null) return;
+    final matches =
+        learningTopics.where((candidate) => candidate.id == requestedId);
+    if (matches.isNotEmpty && matches.first.storyPages.isNotEmpty) {
+      topic = matches.first;
+      view = _AdventureView.story;
+    }
+  }
   int storyPage = 0;
   int questionIndex = 0;
   int? selectedAnswer;
