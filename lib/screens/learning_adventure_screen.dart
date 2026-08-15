@@ -509,7 +509,7 @@ class _TopicCard extends StatelessWidget {
                     Text(topic.subtitle),
                     const SizedBox(height: 6),
                     const Text(
-                      '50 questions · Easy, Medium & Hard',
+                      '100 questions · Easy, Medium & Hard',
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                     ),
                   ],
