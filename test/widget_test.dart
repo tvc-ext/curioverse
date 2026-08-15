@@ -11,11 +11,15 @@ void main() {
     await tester.pumpWidget(CurioVerseApp(profileStore: store));
 
     expect(find.text('Welcome to CurioVerse!'), findsOneWidget);
-    expect(find.text('We never need your real name or exact age.',
-        findRichText: true), findsOneWidget);
+    expect(
+      find.textContaining('We never need your real name or exact age.'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('6–8'));
+    await tester.ensureVisible(find.text('Pixel Panda'));
     await tester.tap(find.text('Pixel Panda'));
+    await tester.ensureVisible(find.text('Enter CurioVerse'));
     await tester.tap(find.text('Enter CurioVerse'));
     await tester.pumpAndSettle();
 
@@ -25,7 +29,7 @@ void main() {
   });
 
   testWidgets('returning explorer skips onboarding', (tester) async {
-    final profile = ChildProfile(
+    const profile = ChildProfile(
       ageBand: AgeBand.creator12to14,
       avatarId: 'astro_owl',
     );
@@ -58,6 +62,7 @@ void main() {
         tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Enter CurioVerse'));
     expect(button.onPressed, isNull);
 
+    await tester.ensureVisible(find.text('Nova Fox'));
     await tester.tap(find.text('Nova Fox'));
     await tester.pump();
     button =
