@@ -11,10 +11,10 @@ void main() {
   );
 
   final worldCases = <String, String>{
-    'Space': 'Moon Shapes',
-    'Dinosaurs': 'Dinosaur Detective',
-    'AI Lab': 'AI Pattern Lab',
-    'Oceans': 'Ocean Networks',
+    'Space': 'The Moon’s light-and-shadow dance',
+    'Dinosaurs': 'Fossils are messages from deep time',
+    'AI Lab': 'How machines learn from examples',
+    'Oceans': 'A living web beneath the waves',
   };
 
   for (final entry in worldCases.entries) {
@@ -25,7 +25,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text(entry.value), findsOneWidget);
-      expect(find.text('Continue'), findsOneWidget);
+      expect(find.text('Next discovery'), findsOneWidget);
     });
   }
 
@@ -34,7 +34,7 @@ void main() {
     await tester.tap(find.text('Start mission'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Moon Shapes'), findsOneWidget);
+    expect(find.text('The Moon’s light-and-shadow dance'), findsOneWidget);
   });
 
   testWidgets('quick challenge opens Pattern Sprint', (tester) async {
