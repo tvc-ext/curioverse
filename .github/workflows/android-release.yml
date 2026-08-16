@@ -19,7 +19,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: curioverse-android-release
+  group: curioverse-android-release-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
