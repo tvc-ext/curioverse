@@ -138,7 +138,7 @@ jobs:
                   1,
               )
               source = source.replace("signingConfig signingConfigs.debug", "signingConfig signingConfigs.release")
-              source = source.replace("signingConfig = signingConfigs.getByName("debug")", "signingConfig = signingConfigs.getByName("release")")
+              source = source.replace('signingConfig = signingConfigs.getByName("debug")', 'signingConfig = signingConfigs.getByName("release")')
               path.write_text(source)
           elif kotlin.exists():
               path = kotlin
@@ -170,7 +170,7 @@ jobs:
               }""",
                   1,
               )
-              source = source.replace("signingConfig = signingConfigs.getByName("debug")", "signingConfig = signingConfigs.getByName("release")")
+              source = source.replace('signingConfig = signingConfigs.getByName("debug")', 'signingConfig = signingConfigs.getByName("release")')
               path.write_text(source)
           else:
               raise SystemExit("No generated Android app Gradle file found")
