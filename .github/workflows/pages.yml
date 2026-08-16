@@ -1,0 +1,76 @@
+name: GitHub Pages
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: curioverse-pages
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate static website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Validate required files
+        run: |
+          test -f site/index.html
+          test -f site/privacy/index.html
+          test -f site/support/index.html
+          test -f site/styles.css
+
+      - name: Validate static-only site
+        run: |
+          if grep -RInE '<script|<form|document\.cookie|localStorage|sessionStorage|gtag\(|googletagmanager\.com|google-analytics\.com|connect\.facebook\.net|static\.hotjar\.com|cdn\.mxpnl\.com|app\.posthog\.com|cdn\.amplitude\.com' site; then
+            echo "Static site validation failed: scripts, forms, cookies, browser storage, or tracker domains were found."
+            exit 1
+          fi
+
+      - name: Validate privacy coverage
+        run: |
+          grep -qi "broad age band" site/privacy/index.html
+          grep -qi "shared preferences" site/privacy/index.html
+          grep -qi "Google ML Kit" site/privacy/index.html
+          grep -qi "Wikipedia" site/privacy/index.html
+          grep -qi "NASA" site/privacy/index.html
+          grep -qi "GitHub-hosted" site/privacy/index.html
+          grep -qi "no CurioVerse account" site/privacy/index.html
+          grep -qi "no ads" site/privacy/index.html
+          grep -qi "should not be described as transmitting no third-party network data" site/privacy/index.html
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy GitHub Pages
+    needs: validate
+    if: github.event_name != 'pull_request'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
