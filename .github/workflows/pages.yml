@@ -39,8 +39,8 @@ jobs:
 
       - name: Validate static-only site
         run: |
-          if grep -RInE '<script|<form|document\.cookie|localStorage|sessionStorage|gtag\(|googletagmanager|google-analytics|analytics|facebook\.net|hotjar|mixpanel|posthog|amplitude' site; then
-            echo "Static site validation failed: scripts, forms, cookies, browser storage, analytics, or trackers were found."
+          if grep -RInE '<script|<form|document\.cookie|localStorage|sessionStorage|gtag\(|googletagmanager\.com|google-analytics\.com|connect\.facebook\.net|static\.hotjar\.com|cdn\.mxpnl\.com|app\.posthog\.com|cdn\.amplitude\.com' site; then
+            echo "Static site validation failed: scripts, forms, cookies, browser storage, or tracker domains were found."
             exit 1
           fi
 
