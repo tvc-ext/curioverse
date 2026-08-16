@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CurioVerse Privacy Policy</title>
+  <meta name="description" content="Privacy policy for CurioVerse, suitable for the Google Play privacy-policy URL.">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="CurioVerse home"><span class="brand-mark" aria-hidden="true">C</span><span><strong>CurioVerse</strong><small>Privacy Policy</small></span></a>
+    <nav aria-label="Primary navigation"><a href="../#worlds">Learning Worlds</a><a href="../#safety">Parents</a><a href="../support/">Support</a><a href="../privacy/">Privacy</a></nav>
+  </header>
+  <main>
+    <section class="page-hero compact">
+      <p class="eyebrow">Privacy Policy</p>
+      <h1>CurioVerse privacy policy</h1>
+      <p class="lead">Effective date: 16 August 2026</p>
+      <p>CurioVerse is designed as a child-friendly, local-first learning app. This policy describes the current implementation of the app and website.</p>
+    </section>
+    <section class="policy">
+      <h2>Summary</h2>
+      <p>CurioVerse currently does not provide CurioVerse accounts, a CurioVerse cloud database, ads, purchases, analytics, cookies, trackers, website forms, public chat, or social posting. The app stores the child's explorer profile and learning progress on the device.</p>
+      <h2>Information the app asks the child to choose</h2>
+      <p>During onboarding, CurioVerse asks the child to choose a broad age band and an explorer avatar. The age bands are 6-8, 9-11, and 12-14. The avatar is a playful alias such as Nova Fox, Pixel Panda, Cosmo Cat, or Astro Owl.</p>
+      <p>The current app does not ask for a real name, exact age, school, phone number, email address, precise location, or account password.</p>
+      <h2>Local storage on the device</h2>
+      <p>CurioVerse uses local app storage through Flutter shared preferences. Current stored values include:</p>
+      <ul>
+        <li>Selected broad age band.</li>
+        <li>Selected explorer avatar ID.</li>
+        <li>Curiosity energy score.</li>
+        <li>Completed topic or game IDs.</li>
+        <li>Question history used to avoid repeated quiz questions.</li>
+        <li>Cached public educational content and remote question packs for offline use.</li>
+      </ul>
+      <p>This data is intended to stay on the device unless the operating system, backup settings, or parent-managed device tools copy app data outside the app.</p>
+      <h2>Camera, gallery, and image labeling</h2>
+      <p>The Animal Picture Scanner can ask for camera access or gallery access when the child chooses to take or select a picture. CurioVerse uses image picker functionality to load the selected image into the app.</p>
+      <p>Current image labeling uses Google ML Kit image labeling on the device. The app does not upload the photo for labeling in the current implementation. After a label is detected, the app may send the detected label text, such as an animal or object name, to Wikipedia to request a public fact summary.</p>
+      <p>AI image labels can be wrong. CurioVerse shows labels as guesses and encourages comparison with trusted references.</p>
+      <h2>External and public educational content</h2>
+      <p>CurioVerse can request public educational content from third-party public sources. The current implementation includes requests to Wikipedia summary APIs, NASA image search APIs, and a public GitHub-hosted CurioVerse content repository for versioned question packs and game content.</p>
+      <p>These requests are used to show educational content and cache it locally. Because these are third-party services, network requests may include ordinary technical information such as IP address, device or browser network metadata, request time, requested URL, and user-agent or API user-agent details as part of normal internet operation.</p>
+      <p>CurioVerse should not be described as transmitting no third-party network data, because public educational content requests are part of the current implementation.</p>
+      <h2>Accounts, backend, and database</h2>
+      <p>The current CurioVerse app has no CurioVerse account system and no CurioVerse cloud database. It does not currently sync a child's profile or progress to a CurioVerse server.</p>
+      <h2>Advertising, analytics, cookies, and tracking</h2>
+      <p>The current CurioVerse app has no ads, ad SDKs, in-app purchases, analytics SDKs, or behavioral tracking features. This static website does not include analytics, cookies, trackers, forms, JavaScript, or a backend.</p>
+      <h2>Children's safety choices</h2>
+      <p>CurioVerse is built around broad age bands, local progress, short learning missions, and parent-friendly controls. The current app avoids collecting direct personal identifiers from children and does not provide public chat or public profile sharing.</p>
+      <h2>Data deletion</h2>
+      <p>The app includes a way to reset the explorer profile, which clears the stored age band, avatar, and learning progress from local app storage. A parent can also remove local app data by using Android app storage controls or uninstalling the app.</p>
+      <h2>Changes to this policy</h2>
+      <p>This policy should be updated before adding accounts, cloud sync, ads, analytics, purchases, friend connections, public sharing, or any new third-party data flow.</p>
+      <h2>Contact</h2>
+      <p>For support and privacy questions, use the support contact path listed in the Google Play listing or the CurioVerse support page.</p>
+      <p><a href="../support/">Go to CurioVerse Support</a></p>
+    </section>
+  </main>
+  <footer class="site-footer"><p><a href="../">Home</a> <span aria-hidden="true">|</span> <a href="../support/">Support</a></p></footer>
+</body>
+</html>
