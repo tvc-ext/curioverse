@@ -78,6 +78,66 @@ jobs:
       - name: Test
         run: flutter test
 
+      - name: Audit merged release manifest
+        run: |
+          ./android/gradlew -p android app:processReleaseMainManifest
+          manifest="build/app/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml"
+          if [ ! -f "$manifest" ]; then
+            manifest="build/app/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml"
+          fi
+          if [ ! -f "$manifest" ]; then
+            echo "Merged release manifest not found" >&2
+            find build/app/intermediates -name AndroidManifest.xml -print || true
+            exit 1
+          fi
+          cp "$manifest" curioverse-merged-release-manifest.xml
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          path = Path("curioverse-merged-release-manifest.xml")
+          root = ET.parse(path).getroot()
+          android = "{http://schemas.android.com/apk/res/android}"
+          permissions = sorted({
+              node.attrib.get(android + "name", "")
+              for node in root
+              if node.tag in {"uses-permission", "uses-permission-sdk-23"}
+          } - {""})
+
+          expected = {
+              "android.permission.INTERNET",
+              "android.permission.CAMERA",
+          }
+          blocked_prefixes = (
+              "android.permission.ACCESS_FINE_LOCATION",
+              "android.permission.ACCESS_COARSE_LOCATION",
+              "android.permission.READ_CONTACTS",
+              "android.permission.WRITE_CONTACTS",
+              "android.permission.RECORD_AUDIO",
+              "android.permission.READ_PHONE_STATE",
+              "android.permission.CALL_PHONE",
+              "android.permission.READ_SMS",
+              "android.permission.SEND_SMS",
+          )
+          blocked = [p for p in permissions if p.startswith(blocked_prefixes)]
+          print("Merged release permissions:")
+          for permission in permissions:
+              print(f"- {permission}")
+          missing = sorted(expected - set(permissions))
+          if missing:
+              raise SystemExit("Missing expected permissions: " + ", ".join(missing))
+          if blocked:
+              raise SystemExit("Unexpected sensitive permissions: " + ", ".join(blocked))
+          PY
+
+      - name: Upload merged manifest audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: curioverse-merged-release-manifest
+          path: curioverse-merged-release-manifest.xml
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Decode Play upload keystore
         id: signing
         env:
@@ -91,7 +151,6 @@ jobs:
             echo "Play Store signing secrets are not fully configured; signed release packaging will be skipped."
             exit 0
           fi
-
           printf '%s' "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
           cat > android/key.properties <<EOF
           storePassword=$UPLOAD_KEYSTORE_PASSWORD
@@ -106,70 +165,52 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-
           groovy = Path("android/app/build.gradle")
           kotlin = Path("android/app/build.gradle.kts")
-
           if groovy.exists():
               path = groovy
               source = path.read_text()
-              source = source.replace(
-                  "plugins {",
-                  """def keystoreProperties = new Properties()
-          def keystorePropertiesFile = rootProject.file("key.properties")
-          if (keystorePropertiesFile.exists()) {
-              keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-          }
+              source = source.replace("plugins {", """def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
 
-          plugins {""",
-                  1,
-              )
-              source = source.replace(
-                  "android {",
-                  """android {
-              signingConfigs {
-                  release {
-                      keyAlias keystoreProperties["keyAlias"]
-                      keyPassword keystoreProperties["keyPassword"]
-                      storeFile keystoreProperties["storeFile"] ? file(keystoreProperties["storeFile"]) : null
-                      storePassword keystoreProperties["storePassword"]
-                  }
-              }""",
-                  1,
-              )
+plugins {""", 1)
+              source = source.replace("android {", """android {
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties["keyAlias"]
+            keyPassword keystoreProperties["keyPassword"]
+            storeFile keystoreProperties["storeFile"] ? file(keystoreProperties["storeFile"]) : null
+            storePassword keystoreProperties["storePassword"]
+        }
+    }""", 1)
               source = source.replace("signingConfig signingConfigs.debug", "signingConfig signingConfigs.release")
               source = source.replace('signingConfig = signingConfigs.getByName("debug")', 'signingConfig = signingConfigs.getByName("release")')
               path.write_text(source)
           elif kotlin.exists():
               path = kotlin
               source = path.read_text()
-              source = source.replace(
-                  "plugins {",
-                  """import java.util.Properties
-          import java.io.FileInputStream
+              source = source.replace("plugins {", """import java.util.Properties
+import java.io.FileInputStream
 
-          val keystoreProperties = Properties()
-          val keystorePropertiesFile = rootProject.file("key.properties")
-          if (keystorePropertiesFile.exists()) {
-              keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-          }
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 
-          plugins {""",
-                  1,
-              )
-              source = source.replace(
-                  "android {",
-                  """android {
-              signingConfigs {
-                  create("release") {
-                      keyAlias = keystoreProperties["keyAlias"] as String
-                      keyPassword = keystoreProperties["keyPassword"] as String
-                      storeFile = file(keystoreProperties["storeFile"] as String)
-                      storePassword = keystoreProperties["storePassword"] as String
-                  }
-              }""",
-                  1,
-              )
+plugins {""", 1)
+              source = source.replace("android {", """android {
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }""", 1)
               source = source.replace('signingConfig = signingConfigs.getByName("debug")', 'signingConfig = signingConfigs.getByName("release")')
               path.write_text(source)
           else:
@@ -226,74 +267,29 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const tag = 'latest';
-
             try {
-              const existing = await github.rest.repos.getReleaseByTag({
-                owner,
-                repo,
-                tag,
-              });
-              await github.rest.repos.deleteRelease({
-                owner,
-                repo,
-                release_id: existing.data.id,
-              });
+              const existing = await github.rest.repos.getReleaseByTag({ owner, repo, tag });
+              await github.rest.repos.deleteRelease({ owner, repo, release_id: existing.data.id });
             } catch (error) {
               if (error.status !== 404) throw error;
             }
-
             try {
-              await github.rest.git.deleteRef({
-                owner,
-                repo,
-                ref: `tags/${tag}`,
-              });
+              await github.rest.git.deleteRef({ owner, repo, ref: `tags/${tag}` });
             } catch (error) {
               if (![404, 422].includes(error.status)) throw error;
             }
-
-            await github.rest.git.createRef({
-              owner,
-              repo,
-              ref: `refs/tags/${tag}`,
-              sha: context.sha,
-            });
-
+            await github.rest.git.createRef({ owner, repo, ref: `refs/tags/${tag}`, sha: context.sha });
             const release = await github.rest.repos.createRelease({
-              owner,
-              repo,
-              tag_name: tag,
-              target_commitish: context.sha,
+              owner, repo, tag_name: tag, target_commitish: context.sha,
               name: 'CurioVerse Latest Android Release',
-              body: [
-                'Latest successful CurioVerse Android build.',
-                '',
-                `Version: ${process.env.RELEASE_VERSION}+${process.env.RELEASE_BUILD_NUMBER}`,
-                `Commit: ${context.sha}`,
-                'The previous release and Android artifacts are replaced automatically.',
-              ].join('\n'),
-              draft: false,
-              prerelease: false,
-              make_latest: 'true',
+              body: ['Latest successful CurioVerse Android build.', '', `Version: ${process.env.RELEASE_VERSION}+${process.env.RELEASE_BUILD_NUMBER}`, `Commit: ${context.sha}`, 'The previous release and Android artifacts are replaced automatically.'].join('\n'),
+              draft: false, prerelease: false, make_latest: 'true',
             });
-
             const upload = async (filePath, name, contentType) => {
               const data = fs.readFileSync(filePath);
-              await github.rest.repos.uploadReleaseAsset({
-                owner,
-                repo,
-                release_id: release.data.id,
-                name,
-                headers: {
-                  'content-type': contentType,
-                  'content-length': data.length,
-                },
-                data,
-              });
+              await github.rest.repos.uploadReleaseAsset({ owner, repo, release_id: release.data.id, name, headers: { 'content-type': contentType, 'content-length': data.length }, data });
             };
-
             await upload(process.env.APK_PATH, 'curioverse-latest.apk', 'application/vnd.android.package-archive');
-
             if (process.env.SIGNED_AAB_AVAILABLE === 'true' && fs.existsSync(process.env.AAB_PATH)) {
               await upload(process.env.AAB_PATH, 'curioverse-play-store.aab', 'application/octet-stream');
             }
@@ -303,6 +299,7 @@ jobs:
         run: |
           echo "## CurioVerse Android" >> "$GITHUB_STEP_SUMMARY"
           echo "- Validation: flutter analyze + flutter test" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Families audit: merged release manifest checked and retained as an artifact" >> "$GITHUB_STEP_SUMMARY"
           echo "- Version: $RELEASE_VERSION+$RELEASE_BUILD_NUMBER" >> "$GITHUB_STEP_SUMMARY"
           echo "- APK: optimized ARM64 tester install artifact" >> "$GITHUB_STEP_SUMMARY"
           echo "- Play Store AAB: generated only when upload-key signing secrets are configured" >> "$GITHUB_STEP_SUMMARY"
